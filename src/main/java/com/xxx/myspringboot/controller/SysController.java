@@ -2,14 +2,12 @@ package com.xxx.myspringboot.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaIgnore;
-import cn.hutool.http.server.HttpServerRequest;
 import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.service.ICodeGeneratorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +33,7 @@ public class SysController {
     @Resource
     private ICodeGeneratorService codeGeneratorService;
 
-    @Autowired
+    @Resource
     private Environment env;
 
     /**
@@ -68,6 +66,11 @@ public class SysController {
 //        return ApiResult.success(val);
 //    }
 
+    /**
+     * 获取IP信息
+     * @param request request
+     * @return all
+     */
     @SaIgnore
     @GetMapping("/get/ip")
     @Operation(summary = "获取IP信息")
@@ -118,7 +121,7 @@ public class SysController {
                 "HTTP_CLIENT_IP",
                 "HTTP_X_FORWARDED_FOR"
         };
-
+        
         for (String header : headers) {
             String ip = request.getHeader(header);
             if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
@@ -176,18 +179,16 @@ public class SysController {
         }
     }
 
-    /**
-     * 敏感值脱敏：保留前 2 位和后 2 位，中间用 * 代替。
-     */
-    private String maskValue(String val) {
-        if (val == null || val.length() <= 4) {
-            return "****";
-        }
-        int keep = 2;
-        return val.substring(0, keep)
-                + "*".repeat(val.length() - keep * 2)
-                + val.substring(val.length() - keep);
-    }
+//敏感值脱敏：保留前 2 位和后 2 位，中间用 * 代替。
+//    private String maskValue(String val) {
+//        if (val == null || val.length() <= 4) {
+//            return "****";
+//        }
+//        int keep = 2;
+//        return val.substring(0, keep)
+//                + "*".repeat(val.length() - keep * 2)
+//                + val.substring(val.length() - keep);
+//    }
 
     //endregion
 
