@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: MySpringBoot # 项目文件名
+  jackson:
+    property-naming-strategy: UPPER_CAMEL_CASE #大写开头
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    mapper:
+      accept-case-insensitive-properties: true # 传入的参数大小写不敏感
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/spring_boot_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
+    username: root
+    password: Mysql@8
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: admin123
+      database: 0
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 200
+          max-idle: 10
+          min-idle: 0
+          max-wait: -1ms
+          time-between-eviction-runs: 60000ms
+server:
+  servlet:
+    context-path: /api # 接口统一前缀
+  port: 8080 # 启动的端口号
+
+knife4j:
+  basic:
+    enable: true #启用接口文档
+  setting:
+    language: zh_cn
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true # 字段名称默认开启驼峰转下划线
+  global-config:
+    db-config:
+      table-underline: true # 表名也转下划线
+
+########### 查看sql日志 生产环境不用  ###########
+decorator:
+  datasource:
+    p6spy:
+      # 日志格式
+      log-format: "\nsql执行耗时:%(executionTime) || sql语句:%(sql)\n"
+      # 自定义日志类
+      logging: custom
+      custom-appender-class: com.xxx.myspringboot.config.StdoutLogger
+
+############## Sa-Token 配置 (文档: https://sa-token.com) ##############
+sa-token:
+  # token 名称（同时也是 cookie 名称）
+  token-name: Authorization
+  # token 有效期（单位：秒） 默认30天，-1 代表永久有效
+  timeout: 2592000
+  # token 最低活跃频率（单位：秒），如果 token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
+  active-timeout: -1
+  # 是否允许同一账号多地同时登录 （为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token, 为 false 时每次登录新建一个 token）
+  is-share: false
+  # token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: true
+  # 是否尝试从 cookie 里读取 token，默认 true
+  is-read-cookie: false
+  # 确保从 header 读取 token（默认已开启，显式声明更清晰）
+  is-read-header: true
+  # 指定 token 提交时的前缀
+  token-prefix: Bearer

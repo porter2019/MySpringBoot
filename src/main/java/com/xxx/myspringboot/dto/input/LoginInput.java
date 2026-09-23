@@ -1,0 +1,24 @@
+package com.xxx.myspringboot.dto.input;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+/**
+ * 登录所需信息
+ */
+@Data
+@Schema(description = "登录所需信息")
+public class LoginInput {
+
+    /**
+     * 手机号
+     */
+    @Schema(description = "手机号", example = "13000000000", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String cellPhone;
+
+    /**
+     * 密码
+     */
+    @Schema(description = "密码", example = "000", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String password;
+}
