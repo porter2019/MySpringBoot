@@ -17,10 +17,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * 账户
+ */
 @SaCheckLogin
 @RestController
 @RequestMapping("/account")
@@ -30,11 +34,6 @@ public class AccountController {
     @Resource
     ISysUserService sysUserService;
 
-    /**
-     * 添加初始用户
-     *
-     * @return
-     */
     @SaIgnore
     @GetMapping("init")
     @Operation(summary = "添加初始用户")
@@ -49,24 +48,19 @@ public class AccountController {
         return ApiResult.success();
     }
 
-    /**
-     * 登录
-     *
-     * @return
-     */
     @PostMapping("login")
-    @Operation(summary = "登录获取token")
-    public ApiResult Login(@RequestBody LoginInput req, HttpServletResponse response) {
+    @Operation(summary = "登录")
+    public ApiResult Login(@RequestBody @Valid LoginInput req, HttpServletResponse response) {
         var pwd = SecureUtil.md5(req.getPassword());
         var wrapper = new LambdaQueryWrapper<SysUser>();
         wrapper.eq(SysUser::getCellPhone, req.getCellPhone());
         wrapper.eq(SysUser::getPassword, pwd);
         var userEntity = sysUserService.getOne(wrapper);
         if (userEntity == null) {
-            return ApiResult.error("用户不存在");
+            return ApiResult.failed("用户不存在");
         }
         if (!userEntity.getStatus()) {
-            return ApiResult.error("用户被禁用");
+            return ApiResult.failed("用户被禁用");
         }
 
         var updateWrapper = new LambdaUpdateWrapper<SysUser>();
@@ -99,16 +93,11 @@ public class AccountController {
         return ApiResult.success(StpUtil.isLogin() ? "！已登录！":"未登录");
     }
 
-    /**
-     * 退出登录
-     *
-     * @return
-     */
     @PostMapping("logout")
     @Operation(summary = "退出登录")
     public ApiResult Logout() {
         // 所有这个账号的都注销
-//        StpUtil.logout(StpUtil.getLoginId());
+        // StpUtil.logout(StpUtil.getLoginId());
         // 当前客户端注销
         StpUtil.logout(new SaLogoutParameter()
                 // 注销范围： TOKEN=只注销当前 token 的会话，ACCOUNT=注销当前 token 指向的 loginId 其所有客户端会话

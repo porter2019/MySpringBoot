@@ -1,3 +1,7 @@
+app:
+  domain-url: http://192.168.2.6:8080 # 接口访问域名
+  web-root-path: /app/wwwroot # 容器内固定绝对路径，由 docker -v 挂载
+  static-url-prefix: "" # 静态文件访问前缀，Nginx 直接提供，无前缀
 spring:
   application:
     name: MySpringBoot # 项目文件名

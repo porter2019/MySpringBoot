@@ -1,3 +1,11 @@
+logging:
+  level:
+    org.springframework.transaction: DEBUG
+    org.springframework.jdbc.support: DEBUG   # 可选，看连接获取
+app:
+  domain-url: http://192.168.2.6:8080 # 接口访问域名
+  web-root-path: ./wwwroot # dev环境下使用这个目录
+  static-url-prefix: /api # 静态文件访问前缀，和下面配置server.servlet.context-path保持一致
 spring:
   application:
     name: MySpringBoot # 项目文件名
@@ -47,7 +55,7 @@ mybatis-plus:
 ########### 查看sql日志 生产环境不用  ###########
 decorator:
   datasource:
-    p6spy:
+    p6spy: # 已知批量操作不会输出sql
       # 日志格式
       log-format: "\nsql执行耗时:%(executionTime) || sql语句:%(sql)\n"
       # 自定义日志类

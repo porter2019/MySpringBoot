@@ -1,6 +1,7 @@
 package com.xxx.myspringboot.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,13 +20,13 @@ public class BaseEntityStandard extends BaseEntity {
     /**
      * 创建者用户Id
      */
-    @TableField(value = "created_user_id", fill = FieldFill.INSERT)
+    @TableField(value = "created_user_id", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     private Long createdUserId;
 
     /**
      * 创建者用户名
      */
-    @TableField(value = "created_user_name", fill = FieldFill.INSERT)
+    @TableField(value = "created_user_name", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     private String createdUserName;
 
     /**

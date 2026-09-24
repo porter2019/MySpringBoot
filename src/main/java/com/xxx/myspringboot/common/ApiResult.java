@@ -55,7 +55,7 @@ public class ApiResult implements Serializable {
         this.timestamp = System.currentTimeMillis();
     }
 
-    // ============ 成功 ============
+    // region ============ 成功 ============
 
     /**
      * 成功（无数据）
@@ -85,7 +85,9 @@ public class ApiResult implements Serializable {
         return new ApiResult(200, data, true, null, extras);
     }
 
-    // ============ 失败 ============
+    // endregion
+
+    // region ============ 失败 ============
 
     /**
      * 失败（默认 500）
@@ -115,7 +117,9 @@ public class ApiResult implements Serializable {
         return new ApiResult(statusCode, null, false, errors, extras);
     }
 
-    // ============ 常用快捷方法 ============
+    // endregion
+
+    // region ============ 常用快捷方法 ============
 
     /**
      * 未授权 401
@@ -153,11 +157,13 @@ public class ApiResult implements Serializable {
     /**
      * 参数错误 400
      */
-    public static ApiResult badRequest(Object errors) {
+    public static ApiResult failed(Object errors) {
         return error(400, errors);
     }
 
-    // ============ 链式操作 ============
+    // endregion
+
+    // region ============ 链式操作 ============
 
     /**
      * 设置附加数据（链式）
@@ -174,4 +180,6 @@ public class ApiResult implements Serializable {
         this.data = data;
         return this;
     }
+
+    // endregion
 }

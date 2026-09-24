@@ -2,15 +2,17 @@ package com.xxx.myspringboot.service;
 
 import com.xxx.myspringboot.entity.SysUser;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.xxx.myspringboot.entity.SysUserOMView;
+
+import java.util.List;
 
 /**
- * <p>
- * 系统用户 服务类
- * </p>
- *
- * @author X
- * @since 2026-09-22
+ * 系统用户
  */
 public interface ISysUserService extends IService<SysUser> {
+    long Add(SysUserOMView entity);
 
+    boolean Edit(SysUserOMView entity);
+
+    boolean Delete(List<Long> idList);
 }

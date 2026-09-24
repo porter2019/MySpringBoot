@@ -34,9 +34,13 @@ public class MybatisPlusMetaObjectHandler implements MetaObjectHandler {
         Long userId = getCurrentUserId();
         String userName = getCurrentUserName();
 
-        this.strictInsertFill(metaObject, "updatedUserId", Long.class, userId);
-        this.strictInsertFill(metaObject, "updatedUserName", String.class, userName);
-        this.strictUpdateFill(metaObject, "updatedTime", LocalDateTime.class, LocalDateTime.now());
+//        this.strictUpdateFill(metaObject, "updatedUserId", Long.class, userId);
+//        this.strictUpdateFill(metaObject, "updatedUserName", String.class, userName);
+//        this.strictUpdateFill(metaObject, "updatedTime", LocalDateTime.class, LocalDateTime.now());
+        //强制重新设置内容
+        this.setFieldValByName("updatedUserId", userId, metaObject);
+        this.setFieldValByName("updatedUserName", userName, metaObject);
+        this.setFieldValByName("updatedTime", LocalDateTime.now(), metaObject);
     }
 
     private Long getCurrentUserId() {

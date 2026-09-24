@@ -1,0 +1,13 @@
+#系统用户运营管理所需的额外数据
+DROP VIEW IF EXISTS sys_user_om_view;
+
+CREATE VIEW sys_user_om_view AS
+SELECT
+    a.*,
+    IFNULL(GROUP_CONCAT(ru.role_id SEPARATOR ','), '') AS role_ids, # 角色ID逗号分隔
+    IFNULL(GROUP_CONCAT(sr.name SEPARATOR ','), '') AS role_names # 角色名称逗号分隔
+FROM sys_user a
+LEFT JOIN sys_role_user ru ON a.id = ru.user_id AND ru.is_deleted = 0
+LEFT JOIN sys_role sr ON sr.id = ru.role_id AND sr.is_deleted = 0
+WHERE a.is_deleted = 0
+GROUP BY a.id;

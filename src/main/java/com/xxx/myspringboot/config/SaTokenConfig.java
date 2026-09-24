@@ -13,18 +13,37 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 /**
  * sa-token的配置类
  */
 @Configuration
 public class SaTokenConfig implements WebMvcConfigurer {
+
+    @Value("${app.web-root-path}")
+    private String webRootPath;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 解析成绝对路径，兼容 ./ 和 /app/wwwroot
+        String location = Paths.get(webRootPath, "uploads")
+                .toAbsolutePath()
+                .normalize()
+                .toUri()
+                .toString();
+        // toUri() 会给末尾加 "/"，确保可访问
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations(location);
+    }
 
     /**
      * Sa-Token全局过滤器
@@ -33,20 +52,19 @@ public class SaTokenConfig implements WebMvcConfigurer {
     @Bean
     public SaServletFilter getSaServletFilter() {
         return new SaServletFilter()
-
                 // 指定 拦截路由 与 放行路由
-                .addInclude("/**").addExclude("/favicon.ico")    /* 排除掉 /favicon.ico */
+                .addInclude("/**").addExclude("/favicon.ico").addExclude("/api/uploads/**")    /* 排除掉 /favicon.ico */
 
 
-        // 认证函数: 每次请求执行
+                // 认证函数: 每次请求执行
                 .setAuth(obj -> {
 //            var path = SaHolder.getRequest().getRequestPath();
 //            System.out.println("【Sa-Token全局认证】当前请求的url：" + path);
 
-            // 登录认证 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
-            //SaRouter.match("/**", "/user/login", StpUtil::checkLogin);
-            // 更多拦截处理方式，请参考“路由拦截式鉴权”章节 */
-        })
+                    // 登录认证 -- 拦截所有路由，并排除/user/doLogin 用于开放登录
+                    //SaRouter.match("/**", "/user/login", StpUtil::checkLogin);
+                    // 更多拦截处理方式，请参考“路由拦截式鉴权”章节 */
+                })
 
                 // 异常处理函数：每次认证函数发生异常时执行此函数
                 .setError(e -> {
@@ -73,7 +91,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
                             .setHeader("X-Content-Type-Options", "nosniff")
                     ;
                 })
-        ;
+                ;
     }
 
     /**
@@ -84,9 +102,11 @@ public class SaTokenConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册 Sa-Token 拦截器，校验规则为 StpUtil.checkLogin() 登录校验。
+        // 虽然server.servlet.context-path配置了统一前缀，单这里不加前缀
         registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
+                        "/uploads/**",
                         "/account/login",
                         "/doc.html",
                         "/webjars/**",

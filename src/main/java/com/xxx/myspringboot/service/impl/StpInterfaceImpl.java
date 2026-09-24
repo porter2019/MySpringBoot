@@ -1,7 +1,6 @@
 package com.xxx.myspringboot.service.impl;
 
 import cn.dev33.satoken.stp.StpInterface;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

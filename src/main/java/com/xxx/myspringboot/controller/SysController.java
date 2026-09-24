@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,7 +46,7 @@ public class SysController {
     @GetMapping("/db/sync")
     @Operation(summary = "根据数据库的表生成实体")
     public ApiResult CodeGenerator(@RequestParam(defaultValue = "") String tableNames) {
-        if (tableNames.isBlank()) {
+        if (StringUtils.isBlank(tableNames)) {
             return ApiResult.error("缺少参数");
         }
         codeGeneratorService.generate(tableNames);
@@ -57,7 +58,7 @@ public class SysController {
 //    @GetMapping("/get/config")
 //    @Operation(summary = "获取配置文件中的值")
 //    public ApiResult GetConfigValue(@RequestParam(defaultValue = "spring.profiles.active") String path) {
-//        if (path.isBlank()) {
+//        if (StringUtils.isBlank(path)) {
 //            return ApiResult.error("缺少路径");
 //        }
 //
