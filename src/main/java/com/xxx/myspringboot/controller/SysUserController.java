@@ -3,13 +3,15 @@ package com.xxx.myspringboot.controller;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.xxx.myspringboot.annotation.PermissionAction;
+import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.common.CurrentConst;
 import com.xxx.myspringboot.common.PublicConst;
 import com.xxx.myspringboot.dto.input.SysUser.SysUserPageInput;
 import com.xxx.myspringboot.entity.SysUser;
 import com.xxx.myspringboot.entity.SysUserOMView;
-import com.xxx.myspringboot.service.ISysRoleUserService;
+import com.xxx.myspringboot.service.ISysPermitService;
 import com.xxx.myspringboot.service.ISysUserOMViewService;
 import com.xxx.myspringboot.service.ISysUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +34,7 @@ import java.util.List;
 @RequestMapping("/sysUser")
 @Tag(name = "系统用户")
 @Validated
+@PermissionHandler(module = "系统管理", handler = "系统用户", alias = "SysUser")
 public class SysUserController {
 
     @Resource
@@ -41,15 +44,14 @@ public class SysUserController {
     private ISysUserService sysUserService;
 
     @Resource
-    private ISysRoleUserService sysRoleUserService;
+    private ISysPermitService sysPermitService;
 
     @PostMapping("/get/pagelist")
     @Operation(summary = "获取分页列表")
+    @PermissionAction(name = "查看", alias = "show")
     public ApiResult GetPageList(@RequestBody SysUserPageInput req) {
         var data = sysUserOMViewService.getPageList(req);
-        data.getItems().forEach(item -> {
-            item.setPassword(PublicConst.Display_User_Password);
-        });
+        data.getItems().forEach(item -> item.setPassword(PublicConst.Display_User_Password));
         return ApiResult.success(data);
     }
 
@@ -67,6 +69,7 @@ public class SysUserController {
 
     @PostMapping("add")
     @Operation(summary = "添加")
+    @PermissionAction(name = "添加", alias = "add")
     public ApiResult Add(@RequestBody SysUserOMView entity) {
         var id = sysUserService.Add(entity);
         return ApiResult.success(id > 0 ? "添加成功" : "添加失败");
@@ -83,6 +86,7 @@ public class SysUserController {
 
     @PostMapping("edit")
     @Operation(summary = "修改")
+    @PermissionAction(name = "修改", alias = "edit")
     public ApiResult Edit(@RequestBody SysUserOMView entity) {
         sysUserService.Edit(entity);
         return ApiResult.success("修改成功");
@@ -90,6 +94,7 @@ public class SysUserController {
 
     @DeleteMapping("delete")
     @Operation(summary = "删除")
+    @PermissionAction(name = "删除", alias = "delete")
     public ApiResult Delete(@RequestParam @NotBlank String ids) {
         List<Long> idList = Arrays.stream(StringUtils.split(ids, ','))
                 .filter(StringUtils::isNotBlank)
@@ -122,7 +127,7 @@ public class SysUserController {
                 .set(SysUser::getUpdatedTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
 
-        return  ApiResult.success(newStatusText);
+        return ApiResult.success(newStatusText);
     }
 
     @GetMapping("switch/isom")
@@ -143,7 +148,7 @@ public class SysUserController {
                 .set(SysUser::getUpdatedTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
 
-        return  ApiResult.success(newStatusText);
+        return ApiResult.success(newStatusText);
     }
 
     @GetMapping("switch/ismp")
@@ -164,7 +169,13 @@ public class SysUserController {
                 .set(SysUser::getUpdatedTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
 
-        return  ApiResult.success(newStatusText);
+        return ApiResult.success(newStatusText);
     }
 
+    @GetMapping("get/ids/by/permission")
+    @Operation(summary = "获取拥有某个权限的用户id列表")
+    public ApiResult GetUserIdListByPermission(@RequestParam @NotBlank String handlerName, @RequestParam @NotBlank String actionName) {
+        var userIdList = sysPermitService.getUserIdByPermission(handlerName, actionName);
+        return ApiResult.success(userIdList);
+    }
 }

@@ -7,12 +7,7 @@ import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**
- * <p>
  * 系统模块下的功能 服务实现类
- * </p>
- *
- * @author X
- * @since 2026-09-26
  */
 @Service
 public class SysHandlerServiceImpl extends ServiceImpl<SysHandlerMapper, SysHandler> implements ISysHandlerService {

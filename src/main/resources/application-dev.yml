@@ -1,7 +1,7 @@
 logging:
   level:
     org.springframework.transaction: DEBUG
-    org.springframework.jdbc.support: DEBUG   # 可选，看连接获取
+    org.springframework.jdbc.support: DEBUG
 app:
   domain-url: http://192.168.2.6:8080 # 接口访问域名
   web-root-path: ./wwwroot # dev环境下使用这个目录
@@ -46,6 +46,7 @@ knife4j:
     language: zh_cn
 
 mybatis-plus:
+  mapper-locations: classpath*:/**/mapper/xml/*.xml
   configuration:
     map-underscore-to-camel-case: true # 字段名称默认开启驼峰转下划线
   global-config:

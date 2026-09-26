@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.service.ICodeGeneratorService;
+import com.xxx.myspringboot.service.impl.PermissionSyncService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -17,10 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 系统接口
@@ -37,6 +35,17 @@ public class SysController {
     @Resource
     private Environment env;
 
+    @Resource
+    private PermissionSyncService permissionSyncService;
+
+    @SaIgnore
+    @GetMapping("permit/sync")
+    @Operation(summary = "同步系统权限")
+    public ApiResult SyncPermit() {
+        var msg = permissionSyncService.sync();
+        return ApiResult.success(msg);
+    }
+
     /**
      * 根据数据库的表生成实体
      *
@@ -46,6 +55,9 @@ public class SysController {
     @GetMapping("/db/sync")
     @Operation(summary = "根据数据库的表生成实体")
     public ApiResult CodeGenerator(@RequestParam(defaultValue = "") String tableNames) {
+        if (!Objects.equals(env.getProperty("spring.profiles.active"), "dev")) {
+            return ApiResult.error("该接口只能在dev环境下使用");
+        }
         if (StringUtils.isBlank(tableNames)) {
             return ApiResult.error("缺少参数");
         }
@@ -69,13 +81,14 @@ public class SysController {
 
     /**
      * 获取IP信息
+     *
      * @param request request
      * @return all
      */
     @SaIgnore
     @GetMapping("/get/ip")
     @Operation(summary = "获取IP信息")
-    public ApiResult GetIP(HttpServletRequest  request) {
+    public ApiResult GetIP(HttpServletRequest request) {
         Map<String, Object> data = new LinkedHashMap<>();
 
         data.put("env", env.getProperty("spring.profiles.active"));
@@ -122,7 +135,7 @@ public class SysController {
                 "HTTP_CLIENT_IP",
                 "HTTP_X_FORWARDED_FOR"
         };
-        
+
         for (String header : headers) {
             String ip = request.getHeader(header);
             if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {

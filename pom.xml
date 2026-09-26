@@ -162,6 +162,24 @@
     </dependencies>
 
     <build>
+        <resources>
+            <!-- 1. 让 src/main/java 下的 xml 也被复制到 target/classes -->
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+
+            <!-- 2. 保留默认的 src/main/resources 资源 -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

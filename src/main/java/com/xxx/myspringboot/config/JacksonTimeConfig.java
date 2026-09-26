@@ -14,13 +14,21 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Jackson时间配置类
+ * 用于配置Jackson对Java 8日期时间类型的序列化和反序列化
+ */
 @JacksonComponent
+@SuppressWarnings("unused")
 public class JacksonTimeConfig {
 
+    // 日期格式化器：格式为"yyyy-MM-dd"
     public static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    // 时间格式化器：格式为"HH:mm:ss"
     public static final DateTimeFormatter TIME_FORMATTER =
             DateTimeFormatter.ofPattern("HH:mm:ss");
+    // 日期时间格式化器：格式为"yyyy-MM-dd HH:mm:ss"
     public static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 

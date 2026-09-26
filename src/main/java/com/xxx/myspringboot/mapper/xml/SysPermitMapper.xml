@@ -1,5 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xxx.myspringboot.mapper.SysPermitMapper">
-
+    <!-- 查询某角色下所有权限及其勾选状态 -->
+    <select id="selectRolePermitList" resultType="com.xxx.myspringboot.dto.output.permit.SysRolePermitOutput">
+        SELECT sm.module_name                                    AS moduleName,
+               sh.handler_name                                   AS handlerName,
+               sp.id                                             AS permitId,
+               sp.permit_name                                    AS permitName,
+               sp.alias_name                                     AS aliasName,
+               sh.order_no                                       AS orderNo,
+               CASE WHEN srp.permit_id IS NULL THEN 0 ELSE 1 END AS isChecked
+        FROM sys_permit sp
+                 INNER JOIN sys_handler sh ON sp.handler_id = sh.id AND sh.is_deleted = 0
+                 INNER JOIN sys_module sm ON sh.module_id = sm.id AND sm.is_deleted = 0
+                 LEFT JOIN sys_role_permit srp
+                           ON srp.permit_id = sp.id
+                               AND srp.role_id = #{roleId}
+                               AND srp.is_deleted = 0
+        WHERE sp.is_deleted = 0
+    </select>
+    <!--根据角色 ids 获取所拥有的权限码 -->
+    <select id="selectPermissionCodesByRoleIds" resultType="java.lang.String">
+        SELECT DISTINCT
+        CONCAT(sh.alias_name, '.', sp.alias_name)
+        FROM sys_role_permit rp
+        INNER JOIN sys_permit sp ON sp.id = rp.permit_id AND sp.is_deleted = 0
+        INNER JOIN sys_handler sh ON sh.id = sp.handler_id AND sh.is_deleted = 0
+        WHERE rp.role_id IN
+        <foreach collection="roleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND rp.is_deleted = 0
+        AND sh.alias_name IS NOT NULL AND sh.alias_name &lt;&gt; ''
+        AND sp.alias_name IS NOT NULL AND sp.alias_name &lt;&gt; ''
+    </select>
+    <!-- 根据用户 id 获取所拥有的权限码 -->
+    <select id="selectPermissionCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT CONCAT(sh.alias_name, '.', sp.alias_name)
+        FROM sys_role_user ru
+                 INNER JOIN sys_role r ON r.id = ru.role_id AND r.is_deleted = 0 AND r.status = 1
+                 INNER JOIN sys_role_permit rp ON rp.role_id = r.id AND rp.is_deleted = 0
+                 INNER JOIN sys_permit sp ON sp.id = rp.permit_id AND sp.is_deleted = 0
+                 INNER JOIN sys_handler sh ON sh.id = sp.handler_id AND sh.is_deleted = 0
+        WHERE ru.user_id = #{userId}
+          AND ru.is_deleted = 0
+          AND sh.alias_name IS NOT NULL
+          AND sh.alias_name &lt;&gt; ''
+          AND sp.alias_name IS NOT NULL
+          AND sp.alias_name &lt;&gt; ''
+    </select>
+    <!--    查询拥有指定权限的用户Id列表-->
+    <select id="selectUserIdsByPermission" resultType="java.lang.Long">
+        SELECT DISTINCT ru.user_id
+        FROM sys_role_user ru
+        WHERE ru.is_deleted = 0
+          AND EXISTS (SELECT 1
+                      FROM sys_role_permit rp
+                               INNER JOIN sys_permit sp ON sp.id = rp.permit_id AND sp.is_deleted = 0
+                               INNER JOIN sys_handler sh ON sh.id = sp.handler_id AND sh.is_deleted = 0
+                      WHERE rp.role_id = ru.role_id
+                        AND rp.is_deleted = 0
+                        AND sp.alias_name = #{actionAliasName}
+                        AND sh.alias_name = #{handlerAliasName})
+    </select>
 </mapper>
