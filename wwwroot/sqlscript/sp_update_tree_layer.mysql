@@ -1,0 +1,50 @@
+#mysql8.0版本
+-- 更改分隔符以定义存储过程
+DELIMITER $$
+
+-- 尝试删除存储过程，如果存在的话
+DROP PROCEDURE IF EXISTS sp_update_tree_layer$$
+
+-- 创建存储过程
+CREATE PROCEDURE sp_update_tree_layer()
+BEGIN
+    -- 使用递归CTE来构建层级结构
+    WITH RECURSIVE p AS (
+        SELECT
+            a.id,
+            a.name,
+            a.order_no,
+            CAST('' AS CHAR(255)) AS parent_name,  -- 显式定义初始长度
+            CAST(CONCAT('|', a.id, '|') AS CHAR(1000)) AS full_id,
+            a.name AS full_name,
+            1 AS level_no,
+            a.order_no AS full_order_no
+        FROM Tree a
+        WHERE a.parent_id = 0 and a.is_deleted = 0
+        UNION ALL
+        SELECT
+            a.id,
+            a.`name`,
+            a.order_no,
+            CAST(p.`name` AS CHAR(255)) AS parent_name,
+            CAST(LEFT(CONCAT(p.full_id, a.id, '|'), 1000) AS CHAR(1000)) AS full_id,
+            CAST(LEFT(CONCAT(p.full_name, '|', a.name), 1000) AS CHAR(1000)) AS full_name,
+            (p.level_no + 1) AS level_no,
+            LEFT(CONCAT(p.full_order_no, '|', a.order_no),2000) AS full_order_no
+        FROM Tree a
+                 INNER JOIN p ON a.parent_id = p.id where a.is_deleted = 0
+    )
+    -- 更新Tree表中的层级信息
+    UPDATE Tree q
+        INNER JOIN p ON q.id = p.id
+    SET
+        q.parent_name = p.parent_name,
+        q.full_id = LEFT(p.full_id, 1000),       -- 在赋值时再次截断，保险
+        q.full_name = LEFT(p.full_name, 1000),
+        q.level_no = p.level_no,
+        q.full_order_no = LEFT(p.full_order_no, 1000);
+END$$
+
+-- 恢复默认分隔符
+DELIMITER ;
+
