@@ -50,7 +50,7 @@ public class MySpringBootApplication {
                         "Profile(s): \t{}\n\t" +
                         "Local: \t\thttp://localhost:{}\n\t" +
                         "External: \thttp://{}:{}\n\t" +
-                        "Doc: \t\thttp://{}:{}/doc.html\n" +
+                        "Doc: \t\thttp://{}:{}/api/doc.html\n" +
                         "----------------------------------------------------------",
                 appName, profiles, port, hostAddress, port, hostAddress, port);
 
