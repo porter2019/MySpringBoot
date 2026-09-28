@@ -2,8 +2,8 @@ package com.xxx.myspringboot;
 
 import cn.hutool.core.lang.Assert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xxx.myspringboot.entity.SysUser;
-import com.xxx.myspringboot.service.ISysUserService;
+import com.xxx.myspringboot.entity.sys.SysUser;
+import com.xxx.myspringboot.service.sys.ISysUserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

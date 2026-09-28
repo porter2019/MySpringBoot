@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xxx.myspringboot.mapper.SysRoleMapper">
-    <select id="selectRoleListByUserId" resultType="com.xxx.myspringboot.entity.SysRole">
+<mapper namespace="com.xxx.myspringboot.mapper.sys.SysRoleMapper">
+    <select id="selectRoleListByUserId" resultType="com.xxx.myspringboot.entity.sys.SysRole">
         select a.*
         from sys_role a
                  inner join sys_role_user b on a.id = b.role_id
