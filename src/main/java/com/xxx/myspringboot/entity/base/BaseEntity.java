@@ -47,19 +47,19 @@ public class BaseEntity implements Serializable {
     @JsonIgnore
     private Boolean isDeleted;
 
-    /** 建表模板
-     * create table 表名
-     * (
-     *     id                bigint auto_increment comment '主键自增id',
-     *
-     *     cellPhone         varchar(100)             null comment '手机号',
-     *
-     *     created_time      datetime   default now() not null comment '创建时间',
-     *     updated_time      datetime   default now() not null comment '更新时间',
-     *     is_deleted        boolean    default false not null comment '软删除',
-     *     constraint 表名_pk  primary key (id)
-     * )
-     *     comment '表说明';
+    /* 建表模板
+      create table 表名
+      (
+          id                bigint auto_increment comment '主键自增id',
+
+          cellPhone         varchar(100)             null comment '手机号',
+
+          created_time      datetime   default now() not null comment '创建时间',
+          updated_time      datetime   default now() not null comment '更新时间',
+          is_deleted        boolean    default false not null comment '软删除',
+          constraint 表名_pk  primary key (id)
+      )
+          comment '表说明';
      */
 }
 
