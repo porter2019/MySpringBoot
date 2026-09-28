@@ -20,9 +20,6 @@ public class MySpringBootApplication {
 //            SaJsonStrategy.instance.registerAllowType(User.class);
 //        } catch (Exception e) {
 //        }
-        log.info("Sa-Token 配置如下：" + SaManager.getConfig());
-
-        log.info("系统目录：" + System.getProperty("user.dir"));
 
         ConfigurableApplicationContext application = SpringApplication.run(MySpringBootApplication.class, args);
         ConfigurableEnvironment env = application.getEnvironment();
@@ -54,6 +51,9 @@ public class MySpringBootApplication {
                         "----------------------------------------------------------",
                 appName, profiles, port, hostAddress, port, hostAddress, port);
 
+        log.info("Sa-Token 配置如下：" + SaManager.getConfig());
+
+        log.info("系统目录：" + System.getProperty("user.dir"));
     }
 
 }

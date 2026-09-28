@@ -29,3 +29,6 @@ build/
 !**/src/test/**/build/
 
 /wwwroot/uploads/**
+/logs/**
+volumes/logs/**
+volumes/wwwroot/uploads/**

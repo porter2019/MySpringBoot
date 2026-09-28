@@ -5,9 +5,9 @@ logging:
     root: info
   config: ${LOGBACK_CONFIG:classpath:logback-spring.xml}
 app:
-  domain-url: http://192.168.2.6:8080 # 接口访问域名
-  web-root-path: ./wwwroot # dev环境下使用这个目录
-  static-url-prefix: /api # 静态文件访问前缀，和下面配置server.servlet.context-path保持一致
+  domain-url: http://192.168.2.6:8060 # 接口访问域名
+  web-root-path: /app/wwwroot # 容器内固定绝对路径，由 docker -v 挂载
+  static-url-prefix: "" # 静态文件访问前缀，Nginx 直接提供，无前缀
 spring:
   application:
     name: MySpringBoot # 项目文件名
@@ -19,12 +19,12 @@ spring:
       accept-case-insensitive-properties: true # 传入的参数大小写不敏感
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/spring_boot_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
+    url: jdbc:mysql://192.168.2.6:3306/spring_boot_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
     username: root
     password: Mysql@8
   data:
     redis:
-      host: localhost
+      host: 192.168.2.6
       port: 6379
       password: admin123
       database: 0
@@ -55,7 +55,7 @@ mybatis-plus:
     db-config:
       table-underline: true # 表名也转下划线
 
-########### 查看sql日志 生产环境不用  ###########
+  ########### 查看sql日志 生产环境不用  ###########
 decorator:
   datasource:
     p6spy: # 已知批量操作不会输出sql
@@ -65,7 +65,7 @@ decorator:
       logging: custom
       custom-appender-class: com.xxx.myspringboot.config.StdoutLogger
 
-############## Sa-Token 配置 (文档: https://sa-token.com) ##############
+  ############## Sa-Token 配置 (文档: https://sa-token.com) ##############
 sa-token:
   # token 名称（同时也是 cookie 名称）
   token-name: Authorization
