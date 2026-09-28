@@ -3,14 +3,18 @@ package com.xxx.myspringboot.handler;
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.xxx.myspringboot.common.ApiResult;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -18,8 +22,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 全局异常处理器
+ * 用于统一处理系统中的各种异常情况，返回统一的错误响应格式
+ * Controller层
+ */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 兜底：所有未捕获的异常
+     */
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiResult handleThrowable(Throwable e, HttpServletRequest request) {
+        log.error("系统异常 uri={}", request.getRequestURI(), e);
+        return ApiResult.error("系统繁忙，请稍后重试");
+    }
 
     // 没权限的情况
     @ExceptionHandler(value = NotPermissionException.class)
