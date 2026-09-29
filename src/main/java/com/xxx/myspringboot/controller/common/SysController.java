@@ -3,13 +3,16 @@ package com.xxx.myspringboot.controller.common;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaIgnore;
 import com.xxx.myspringboot.common.ApiResult;
+import com.xxx.myspringboot.dto.event.Demo1Event;
 import com.xxx.myspringboot.service.common.ICodeGeneratorService;
 import com.xxx.myspringboot.service.impl.common.PermissionSyncService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +41,9 @@ public class SysController {
     @Resource
     private PermissionSyncService permissionSyncService;
 
+    @Resource
+    private ApplicationEventPublisher eventPublisher;
+
     @SaIgnore
     @GetMapping("permit/sync")
     @Operation(summary = "同步系统权限")
@@ -65,6 +71,20 @@ public class SysController {
         return ApiResult.success();
     }
 
+    /**
+     * 测试发布事件
+     *
+     * @param name 测试
+     */
+    @SaIgnore
+    @GetMapping("/event/publish")
+    @Operation(summary = "发布事件")
+    public ApiResult TestEventPublish(@RequestParam @NotBlank String name) {
+        System.out.println("[" + Thread.currentThread().getName() + "] 准备发布事件 " + name);
+        eventPublisher.publishEvent(new Demo1Event(name));
+        System.out.println("[" + Thread.currentThread().getName() + "] 已发布事件！ " + name);
+        return ApiResult.success();
+    }
 
 //    @SaIgnore
 //    @GetMapping("/get/config")

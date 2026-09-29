@@ -36,6 +36,14 @@ spring:
           min-idle: 0
           max-wait: -1ms
           time-between-eviction-runs: 60000ms
+  task:
+    execution:
+      pool:
+        core-size: 2          # 核心线程数
+        max-size: 4          # 最大线程数
+        queue-capacity: 100   # 队列容量
+        keep-alive: 10s       # 空闲线程存活时间
+      thread-name-prefix: my-async-  # 线程名前缀
 server:
   servlet:
     context-path: /api # 接口统一前缀
