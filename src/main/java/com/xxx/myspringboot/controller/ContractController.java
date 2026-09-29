@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
+import com.xxx.myspringboot.dto.AuditContext;
+import com.xxx.myspringboot.dto.AuditInfo;
 import com.xxx.myspringboot.dto.input.ContractPageInput;
 import com.xxx.myspringboot.entity.Contract;
 import com.xxx.myspringboot.entity.ContractItem;
@@ -65,7 +67,12 @@ public class ContractController {
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
     public ApiResult Add(@RequestBody Contract entity) {
-        contractService.add(entity);
+        AuditContext.set(new AuditInfo("张三", "演示 - 合同"));
+        try {
+            contractService.add(entity);
+        } finally {
+            AuditContext.clear();
+        }
         return ApiResult.success("添加成功");
     }
 
