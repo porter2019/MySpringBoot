@@ -9,6 +9,7 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,11 +35,33 @@ public class GlobalExceptionHandler {
     /**
      * 兜底：所有未捕获的异常
      */
-    @ExceptionHandler(Throwable.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResult handleThrowable(Throwable e, HttpServletRequest request) {
         log.error("系统异常 uri={}", request.getRequestURI(), e);
         return ApiResult.error("系统繁忙，请稍后重试");
+    }
+
+    //请求参数格式错误
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ApiResult handleNotReadable(HttpMessageNotReadableException e) {
+        // 剥到最内层
+        Throwable root = e;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        String msg = root.getMessage();
+        // 简单清洗：取 "problem: xxx" 后面的内容
+        if (msg != null && msg.contains("problem:")) {
+            msg = msg.substring(msg.indexOf("problem:") + 8).trim();
+        }
+        return ApiResult.failed(msg != null ? msg : "请求参数格式错误");
+    }
+
+    // 枚举值不存在的情况
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ApiResult illegalArgumentException(IllegalArgumentException e) {
+        return ApiResult.failed(e.getMessage());
     }
 
     // 没权限的情况

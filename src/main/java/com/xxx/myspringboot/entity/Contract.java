@@ -1,7 +1,9 @@
 package com.xxx.myspringboot.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.xxx.myspringboot.entity.base.BaseEntityStandard;
+import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -35,7 +37,12 @@ public class Contract extends BaseEntityStandard {
      * 合同类型
      */
     @TableField("c_type")
-    private Integer cType;
+    private ContractTypeEnum cType = ContractTypeEnum.Buy;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getCTypeText() {
+        return cType == null ? null : cType.getDesc();
+    }
 
     /**
      * 签订时间
@@ -94,3 +101,4 @@ public class Contract extends BaseEntityStandard {
     private List<ContractItem> ItemList = new ArrayList<>();
 
 }
+

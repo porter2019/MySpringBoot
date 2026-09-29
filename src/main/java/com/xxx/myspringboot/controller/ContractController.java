@@ -7,8 +7,10 @@ import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.dto.input.ContractPageInput;
 import com.xxx.myspringboot.entity.Contract;
 import com.xxx.myspringboot.entity.ContractItem;
+import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
 import com.xxx.myspringboot.service.IContractItemService;
 import com.xxx.myspringboot.service.IContractService;
+import com.xxx.myspringboot.util.EnumOptionUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -44,7 +46,7 @@ public class ContractController {
     @PermissionAction(name = "查看", alias = "show")
     public ApiResult GetPageList(@RequestBody ContractPageInput req) {
         var data = contractService.getPageList(req);
-        return ApiResult.success(data);
+        return ApiResult.success(data).withEnums(EnumOptionUtils.buildEnumList(List.of(ContractTypeEnum.class, ContractTypeEnum.class), List.of("CType", "CType2")));
     }
 
     @GetMapping("/get/info")
@@ -56,7 +58,7 @@ public class ContractController {
         } else {
             entity.setItemList(contractItemService.list(new LambdaQueryWrapper<ContractItem>().eq(ContractItem::getContractId, id)));
         }
-        return ApiResult.success(entity);
+        return ApiResult.success(entity).withEnums(EnumOptionUtils.buildEnumList(List.of(ContractTypeEnum.class), List.of("CType")));
     }
 
     @PostMapping("add")
@@ -79,10 +81,7 @@ public class ContractController {
     @Operation(summary = "删除")
     @PermissionAction(name = "删除", alias = "delete")
     public ApiResult Delete(@RequestParam @NotBlank String ids) {
-        List<Long> idList = Arrays.stream(StringUtils.split(ids, ','))
-                .filter(StringUtils::isNotBlank)
-                .map(x -> Long.parseLong(x.trim()))
-                .toList();
+        List<Long> idList = Arrays.stream(StringUtils.split(ids, ',')).filter(StringUtils::isNotBlank).map(x -> Long.parseLong(x.trim())).toList();
 
         if (idList.isEmpty()) {
             return ApiResult.failed("ids 无效");

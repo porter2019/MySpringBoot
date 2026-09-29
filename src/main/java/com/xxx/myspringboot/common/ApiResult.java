@@ -1,10 +1,14 @@
 package com.xxx.myspringboot.common;
 
+import com.xxx.myspringboot.util.EnumOptionUtils;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 接口统一返回值
@@ -39,14 +43,14 @@ public class ApiResult implements Serializable {
     /**
      * 附加数据
      */
-    private Object extras;
+    private Map<String, Object> extras;
 
     /**
      * 时间戳
      */
     private long timestamp = System.currentTimeMillis();
 
-    private ApiResult(Integer statusCode, Object data, boolean succeeded, Object errors, Object extras) {
+    private ApiResult(Integer statusCode, Object data, boolean succeeded, Object errors, Map<String, Object> extras) {
         this.statusCode = statusCode;
         this.data = data;
         this.succeeded = succeeded;
@@ -81,7 +85,7 @@ public class ApiResult implements Serializable {
     /**
      * 成功（带数据 + 附加数据）
      */
-    public static ApiResult success(Object data, Object extras) {
+    public static ApiResult success(Object data, Map<String, Object> extras) {
         return new ApiResult(200, data, true, null, extras);
     }
 
@@ -113,7 +117,7 @@ public class ApiResult implements Serializable {
     /**
      * 失败（自定义状态码 + 错误信息 + 附加数据）
      */
-    public static ApiResult error(int statusCode, Object errors, Object extras) {
+    public static ApiResult error(int statusCode, Object errors, Map<String, Object> extras) {
         return new ApiResult(statusCode, null, false, errors, extras);
     }
 
@@ -166,10 +170,23 @@ public class ApiResult implements Serializable {
     // region ============ 链式操作 ============
 
     /**
+     * 设置枚举选项
+     * ApiResult.success(entity).withEnums(EnumOptionUtils.buildEnumList(List.of(ContractTypeEnum.class, ContractTypeEnum.class), List.of("CType", "CType2")));
+     * @param enums 枚举选项
+     * @return ApiResult
+     */
+    public ApiResult withEnums(List<EnumOptionUtils.EnumGroupVO> enums) {
+        return withExtra("Enums", enums);
+    }
+
+    /**
      * 设置附加数据（链式）
      */
-    public ApiResult withExtras(Object extras) {
-        this.extras = extras;
+    public ApiResult withExtra(String key, Object value) {
+        if (this.extras == null) {
+            this.extras = new HashMap<>();
+        }
+        this.extras.put(key, value);
         return this;
     }
 
