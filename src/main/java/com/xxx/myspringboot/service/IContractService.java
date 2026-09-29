@@ -16,4 +16,18 @@ public interface IContractService extends IService<Contract> {
      * @return 分页对象
      */
     PageResult<Contract> getPageList(ContractPageInput input);
+
+    /**
+     * 添加
+     *
+     * @param entity 包含合同信息的实体对象
+     */
+    void add(Contract entity);
+
+    /**
+     * 修改
+     *
+     * @param entity 包含合同信息的实体对象
+     */
+    void edit(Contract entity);
 }

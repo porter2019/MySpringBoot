@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import java.util.List;
 /**
  * 合同表 前端控制器
  */
+@Slf4j
 @RestController
 @RequestMapping("/contract")
 @Tag(name = "合同")
@@ -61,7 +63,7 @@ public class ContractController {
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
     public ApiResult Add(@RequestBody Contract entity) {
-        contractService.save(entity);
+        contractService.add(entity);
         return ApiResult.success("添加成功");
     }
 
@@ -69,7 +71,7 @@ public class ContractController {
     @Operation(summary = "修改")
     @PermissionAction(name = "修改", alias = "edit")
     public ApiResult Edit(@RequestBody Contract entity) {
-        contractService.updateById(entity);
+        contractService.edit(entity);
         return ApiResult.success("修改成功");
     }
 
