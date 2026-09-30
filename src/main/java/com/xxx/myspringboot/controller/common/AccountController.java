@@ -11,11 +11,15 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.common.CurrentConst;
 import com.xxx.myspringboot.dto.input.LoginInput;
+import com.xxx.myspringboot.entity.log.LogLogin;
 import com.xxx.myspringboot.entity.sys.SysUser;
+import com.xxx.myspringboot.service.log.ILogLoginService;
 import com.xxx.myspringboot.service.sys.ISysUserService;
+import com.xxx.myspringboot.util.ServletUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +38,9 @@ public class AccountController {
     @Resource
     ISysUserService sysUserService;
 
+    @Resource
+    ILogLoginService logLoginService;
+
     @SaIgnore
     @GetMapping("init")
     @Operation(summary = "添加初始用户")
@@ -50,7 +57,7 @@ public class AccountController {
 
     @PostMapping("login")
     @Operation(summary = "登录")
-    public ApiResult Login(@RequestBody @Valid LoginInput req, HttpServletResponse response) {
+    public ApiResult Login(HttpServletRequest request, @RequestBody @Valid LoginInput req, HttpServletResponse response) {
         var pwd = SecureUtil.md5(req.getPassword());
         var wrapper = new LambdaQueryWrapper<SysUser>();
         wrapper.eq(SysUser::getCellPhone, req.getCellPhone());
@@ -66,6 +73,15 @@ public class AccountController {
         var updateWrapper = new LambdaUpdateWrapper<SysUser>();
         updateWrapper.eq(SysUser::getId, userEntity.getId()).set(SysUser::getLastLoginTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
+        //添加到登录日志
+        var userAgent = request.getHeader("User-Agent");
+        var logEntity = new LogLogin();
+        logEntity.setUserId(userEntity.getId());
+        logEntity.setUserName(userEntity.getUserName());
+        logEntity.setCellPhone(userEntity.getCellPhone());
+        logEntity.setUserAgent(userAgent);
+        logEntity.setIp(ServletUtil.getClientIp(request));
+        logLoginService.save(logEntity);
 
         StpUtil.login(userEntity.getId());
         StpUtil.getSession().set(CurrentConst.UserId, userEntity.getId());
@@ -90,7 +106,7 @@ public class AccountController {
     @GetMapping("islogin")
     @Operation(summary = "判断是否登录")
     public ApiResult IsLogin() {
-        return ApiResult.success(StpUtil.isLogin() ? "！已登录！":"未登录");
+        return ApiResult.success(StpUtil.isLogin() ? "！已登录！" : "未登录");
     }
 
     @PostMapping("logout")
@@ -106,4 +122,5 @@ public class AccountController {
         );
         return ApiResult.success();
     }
+
 }

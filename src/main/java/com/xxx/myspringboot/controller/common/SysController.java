@@ -6,6 +6,7 @@ import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.dto.event.Demo1Event;
 import com.xxx.myspringboot.service.common.ICodeGeneratorService;
 import com.xxx.myspringboot.service.impl.common.PermissionSyncService;
+import com.xxx.myspringboot.util.ServletUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -114,7 +115,7 @@ public class SysController {
         data.put("env", env.getProperty("spring.profiles.active"));
 
         // ---------- 客户端信息 ----------
-        data.put("clientIp", getClientIp(request));
+        data.put("clientIp", ServletUtil.getClientIp(request));
         data.put("clientHost", request.getRemoteHost());
         data.put("clientPort", request.getRemotePort());
         data.put("clientForwardedIps", getForwardedIps(request));
@@ -141,37 +142,6 @@ public class SysController {
     }
 
     //region 私有方法
-
-    /**
-     * 获取客户端真实 IP。
-     * 依次检查常见代理头，最后回退到 request.getRemoteAddr()。
-     */
-    private String getClientIp(HttpServletRequest request) {
-        String[] headers = {
-                "X-Forwarded-For",
-                "X-Real-IP",
-                "Proxy-Client-IP",
-                "WL-Proxy-Client-IP",
-                "HTTP_CLIENT_IP",
-                "HTTP_X_FORWARDED_FOR"
-        };
-
-        for (String header : headers) {
-            String ip = request.getHeader(header);
-            if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-                // X-Forwarded-For 可能是 "client, proxy1, proxy2"，取第一个
-                int comma = ip.indexOf(',');
-                return comma > 0 ? ip.substring(0, comma).trim() : ip.trim();
-            }
-        }
-
-        String remoteAddr = request.getRemoteAddr();
-        // IPv6 的本地回环地址统一显示为 127.0.0.1
-        if ("0:0:0:0:0:0:0:1".equals(remoteAddr) || "::1".equals(remoteAddr)) {
-            return "127.0.0.1";
-        }
-        return remoteAddr;
-    }
 
     /**
      * 获取完整的代理转发链路。

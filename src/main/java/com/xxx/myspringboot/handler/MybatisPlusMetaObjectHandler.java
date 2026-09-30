@@ -3,19 +3,28 @@ package com.xxx.myspringboot.handler;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.xxx.myspringboot.common.CurrentConst;
+import com.xxx.myspringboot.entity.log.LogAction;
+import com.xxx.myspringboot.entity.log.LogLogin;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Slf4j
 @Component
 public class MybatisPlusMetaObjectHandler implements MetaObjectHandler {
 
+    private static final Set<Class<?>> ExCluded_Insert_Table = Set.of(LogAction.class, LogLogin.class);
+
     @Override
     public void insertFill(MetaObject metaObject) {
 //        log.info("开始插入填充...");
+        Object entity = metaObject.getOriginalObject();
+        if (ExCluded_Insert_Table.contains(entity.getClass())) {
+            return;
+        }
         Long userId = getCurrentUserId();
         String userName = getCurrentUserName();
 

@@ -1,10 +1,13 @@
 package com.xxx.myspringboot.handler;
 
+import com.baomidou.mybatisplus.core.conditions.AbstractWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.xxx.myspringboot.dto.AuditContext;
 import com.xxx.myspringboot.dto.AuditInfo;
 import com.xxx.myspringboot.dto.event.DataChangeEvent;
+import com.xxx.myspringboot.entity.log.LogAction;
+import com.xxx.myspringboot.entity.log.LogLogin;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
@@ -18,153 +21,288 @@ import org.apache.ibatis.session.RowBounds;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
-import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Component
 @Intercepts({@Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})})
 public class DataChangeInterceptor implements Interceptor {
 
-    @Resource()
+    @Resource
     private ApplicationEventPublisher eventPublisher;
+
+    private static final Set<Class<?>> EXCLUDED_TABLES = Set.of(LogAction.class, LogLogin.class);
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Object[] args = invocation.getArgs();
         MappedStatement ms = (MappedStatement) args[0];
         Object parameter = args[1];
-        Executor executor = (Executor) invocation.getTarget();
 
         SqlCommandType commandType = ms.getSqlCommandType();
+        Class<?> entityClass = resolveEntityClass(parameter, ms);
+        if (entityClass == null) {
+            return invocation.proceed();
+        }
 
-        // 1. 只处理增删改，其余直接放行
         if (commandType != SqlCommandType.INSERT
                 && commandType != SqlCommandType.UPDATE
                 && commandType != SqlCommandType.DELETE) {
             return invocation.proceed();
         }
 
-        // 2. UPDATE 才需要查旧数据（执行前）
-        Object oldData = null;
-        if (commandType == SqlCommandType.UPDATE) {
-            oldData = fetchOldData(parameter, ms, executor);
+        if (isExcluded(parameter, ms)) {
+            return invocation.proceed();
         }
 
-        // 3. 执行原始 SQL（无论成功失败都只执行一次）
+        // 批量操作直接跳过审计
+        if (isBatchParameter(parameter)) {
+            return invocation.proceed();
+        }
+
+        Object realEntity = null;
+        Object oldData = null;
+
+        try {
+            realEntity = extractEntity(parameter);
+
+            if (commandType == SqlCommandType.UPDATE && realEntity != null) {
+
+                Executor executor = (Executor) invocation.getTarget();
+                oldData = selectOldByEntity(realEntity, ms, executor);
+            }
+
+        } catch (Exception e) {
+            log.debug("获取数据变更前数据失败，跳过旧数据记录", e);
+        }
+
+        // 业务 SQL 正常执行
         Object result = invocation.proceed();
 
-        // 4. 判断是否真正影响数据，安全转换，避免 ClassCastException
-        if (isAffected(result)) {
-            AuditInfo auditInfo = AuditContext.get(); // 从 ThreadLocal 取自定义上下文
+        // 审计失败不能影响业务
+        try {
 
-            Class<?> entityClass = resolveEntityClass(parameter, ms);
+            if (isAffected(result)) {
 
-            DataChangeEvent eventDTO = new DataChangeEvent();
-            eventDTO.setChangeType(commandType);
-            eventDTO.setEntityClassName(entityClass != null ? entityClass.getName() : null);
-            eventDTO.setOldData(oldData);
-            eventDTO.setNewData(parameter);
-            eventDTO.setLocal(auditInfo != null ? auditInfo.getLocal() : "");
-            eventDTO.setOperator(auditInfo != null ? auditInfo.getOperator() : "");
+                AuditInfo auditInfo = AuditContext.get();
 
-            eventPublisher.publishEvent(eventDTO);
+
+                DataChangeEvent eventDTO = new DataChangeEvent();
+
+                eventDTO.setChangeType(commandType);
+
+                eventDTO.setClientType(auditInfo != null ? auditInfo.getClientType() : 0);
+
+                eventDTO.setEntityClassName(entityClass != null ? entityClass.getName() : null);
+
+                eventDTO.setOldData(oldData);
+
+                // ★ 只使用真实实体
+                eventDTO.setNewData(realEntity);
+
+                eventDTO.setLocal(auditInfo != null ? auditInfo.getLocal() : "");
+
+                eventDTO.setOperator(auditInfo != null ? auditInfo.getOperator() : "");
+
+                eventPublisher.publishEvent(eventDTO);
+            }
+
+        } catch (Exception e) {
+
+            log.debug("数据变更日志记录失败，忽略本次审计", e
+            );
         }
 
         return result;
     }
 
-    private Object fetchOldData(Object parameter, MappedStatement ms, Executor executor) throws SQLException {
-        // 单实体
-        if (!(parameter instanceof Map)) {
-            return selectOldByEntity(parameter, ms, executor);
+    private boolean isBatchParameter(Object parameter) {
+        if (parameter == null) {
+            return false;
         }
-        // ParamMap：update(entity, wrapper) 或 updateById 的包装
-        Map<?, ?> map = (Map<?, ?>) parameter;
-        Object entity = map.get("et"); // MP 中实体通常放在 "et" key
-        if (entity != null) {
-            return selectOldByEntity(entity, ms, executor);
+
+        // 直接是 Collection，例如 List<Entity>
+        if (parameter instanceof Collection<?>) {
+            return true;
         }
-        return null; // 纯 wrapper 更新、无主键，无法定位旧数据
+
+        // MyBatis 参数 Map 中包含 Collection
+        if (parameter instanceof Map<?, ?> map) {
+            for (Object value : map.values()) {
+                if (value instanceof Collection<?>) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
-    private Object selectOldByEntity(Object entity, MappedStatement ms, Executor executor) throws SQLException {
-        // 1. 拿到实体的 TableInfo（MyBatis-Plus 元数据）
+    private Object extractEntity(Object parameter) {
+        if (parameter == null) {
+            return null;
+        }
+
+        // 普通实体
+        if (!(parameter instanceof Map)
+                && !(parameter instanceof Collection)) {
+
+            if (TableInfoHelper.getTableInfo(parameter.getClass()) != null) {
+                return parameter;
+            }
+
+            return null;
+        }
+
+        // Map 参数
+        if (parameter instanceof Map<?, ?> map) {
+
+            // 只认 et
+            Object entity = map.get("et");
+
+            if (entity != null
+                    && TableInfoHelper.getTableInfo(entity.getClass()) != null) {
+                return entity;
+            }
+
+            // 不再把 param1 当实体
+            // Wrapper 场景 [ew, param1] 直接跳过
+
+            return null;
+        }
+
+        // 批量 Collection
+        if (parameter instanceof Collection<?> collection) {
+            for (Object item : collection) {
+                if (item != null
+                        && TableInfoHelper.getTableInfo(item.getClass()) != null) {
+                    return item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isExcluded(Object parameter, MappedStatement ms) {
+        Class<?> entityClass = resolveEntityClass(parameter, ms);
+        if (entityClass == null) {
+            return false;
+        }
+        for (Class<?> excluded : EXCLUDED_TABLES) {
+            if (excluded.isAssignableFrom(entityClass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Object selectOldByEntity(Object entity, MappedStatement ms, Executor executor) {
+        if (entity == null) {
+            return null;
+        }
+
         TableInfo tableInfo = TableInfoHelper.getTableInfo(entity.getClass());
         if (tableInfo == null || tableInfo.getKeyProperty() == null) {
-            return null; // 不是 MP 实体，无法定位主键
+            return null;
         }
 
-        // 2. 反射取出主键值
         Object idValue = tableInfo.getPropertyValue(entity, tableInfo.getKeyProperty());
         if (idValue == null) {
-            return null; // 没有主键，无法查旧数据
+            return null;
         }
 
-        // 3. 拼接 selectById 的 MappedStatement ID
-        //    ms.getId() 形如 com.xxx.mapper.UserMapper.updateById
         String statementId = ms.getId();
-        String mapperNamespace = statementId.substring(0, statementId.lastIndexOf('.'));
+        int dot = statementId.lastIndexOf('.');
+        if (dot < 0) {
+            return null;
+        }
+        String mapperNamespace = statementId.substring(0, dot);
         String selectId = mapperNamespace + ".selectById";
 
         MappedStatement selectMs;
         try {
             selectMs = ms.getConfiguration().getMappedStatement(selectId);
         } catch (Exception e) {
-            // 该 Mapper 没有 selectById（比如自定义 Mapper），放弃查旧数据
+            log.debug("未找到 {}，跳过旧数据查询", selectId);
             return null;
         }
 
-        // 4. 用当前 Executor 直接查询，避免再次经过拦截器链
-        List<Object> list = executor.query(
-                selectMs,
-                idValue,
-                RowBounds.DEFAULT,
-                Executor.NO_RESULT_HANDLER
-        );
-        return list.isEmpty() ? null : list.get(0);
+        try {
+            List<Object> list = executor.query(
+                    selectMs,
+                    idValue,
+                    RowBounds.DEFAULT,
+                    Executor.NO_RESULT_HANDLER
+            );
+            return list.isEmpty() ? null : list.get(0);
+        } catch (Exception e) {
+            log.warn("查询旧数据失败, selectId={}, id={}", selectId, idValue, e);
+            return null;
+        }
     }
 
     private Class<?> resolveEntityClass(Object parameter, MappedStatement ms) {
-        // 1. 单实体：直接返回它的 Class
-        if (parameter != null && !(parameter instanceof Map) && !(parameter instanceof Collection)) {
-            return parameter.getClass();
+        if (parameter == null) {
+            return null;
         }
 
-        // 2. ParamMap：MP 通常把实体放在 "et" key
-        if (parameter instanceof Map) {
-            Map<?, ?> map = (Map<?, ?>) parameter;
-            Object et = map.get("et");
-            if (et != null) {
-                return et.getClass();
-            }
-            // 有些场景 key 是 "param1" 或 "entity"
-            for (Object v : map.values()) {
-                if (v != null && TableInfoHelper.getTableInfo(v.getClass()) != null) {
-                    return v.getClass();
-                }
-            }
+        // 普通实体
+        if (!(parameter instanceof Map) && !(parameter instanceof Collection)) {
+            return TableInfoHelper.getTableInfo(parameter.getClass()) != null
+                    ? parameter.getClass()
+                    : null;
         }
 
-        // 3. 批量：List/Collection，取第一个元素的类型
-        if (parameter instanceof Collection) {
-            Collection<?> coll = (Collection<?>) parameter;
-            for (Object item : coll) {
-                if (item != null) {
+        // 批量 Collection
+        if (parameter instanceof Collection<?> collection) {
+            for (Object item : collection) {
+                if (item != null
+                        && TableInfoHelper.getTableInfo(item.getClass()) != null) {
                     return item.getClass();
                 }
             }
+            return null;
         }
 
-        // 4. 兜底：从 MappedStatement 的 parameterType 拿
-        if (ms.getParameterMap() != null) {
-            Class<?> type = ms.getParameterMap().getType();
-            // MyBatis 对单参数可能包装成 ParamMap，需判断是否真实实体
-            if (type != null && TableInfoHelper.getTableInfo(type) != null) {
-                return type;
+        // Map 不再通过 get("et") / get("ew") 取参数
+        // 直接遍历 values，避免触发参数绑定异常
+        if (parameter instanceof Map<?, ?> map) {
+            for (Object value : map.values()) {
+                if (value == null) {
+                    continue;
+                }
+
+                // 直接实体
+                if (TableInfoHelper.getTableInfo(value.getClass()) != null) {
+                    return value.getClass();
+                }
+
+                // 批量实体
+                if (value instanceof Collection<?> collection) {
+                    for (Object item : collection) {
+                        if (item != null
+                                && TableInfoHelper.getTableInfo(item.getClass()) != null) {
+                            return item.getClass();
+                        }
+                    }
+                }
+
+                // Wrapper
+                if (value instanceof AbstractWrapper<?, ?, ?> wrapper) {
+                    try {
+                        Class<?> entityClass = wrapper.getEntityClass();
+                        if (entityClass != null
+                                && TableInfoHelper.getTableInfo(entityClass) != null) {
+                            return entityClass;
+                        }
+                    } catch (Exception e) {
+                        log.debug("从 Wrapper 获取实体类型失败", e);
+                    }
+                }
             }
         }
 

@@ -6,6 +6,11 @@ package com.xxx.myspringboot.common;
 public class CurrentConst {
 
     /**
+     * 客户端标识
+     */
+    public static final String ClientTag = "From";
+
+    /**
      * 用户Id
      */
     public static final String UserId = "CURRENT_USER_ID";

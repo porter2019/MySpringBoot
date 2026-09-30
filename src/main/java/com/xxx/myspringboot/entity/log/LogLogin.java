@@ -31,10 +31,18 @@ public class LogLogin implements Serializable {
      */
     private Integer clientType;
 
+    public String getClientTypeName() {
+        return switch (clientType) {
+            case 1 -> "后台";
+            case 2 -> "移动端";
+            default -> "未知";
+        };
+    }
+
     /**
      * 用户id
      */
-    private String userId;
+    private long userId;
 
     /**
      * 用户名
@@ -66,5 +74,5 @@ public class LogLogin implements Serializable {
      */
     @TableField(value = "created_time", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdTime;
+    private LocalDateTime createdTime = LocalDateTime.now();
 }

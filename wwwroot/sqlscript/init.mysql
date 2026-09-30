@@ -1,0 +1,325 @@
+create table contract
+(
+    id                bigint auto_increment comment '主键自增id'
+        primary key,
+    code              varchar(50)                              null,
+    name              varchar(30)                              null comment '名称',
+    val               decimal(19, 4) default 0.0000            not null comment '金额',
+    weight            float          default 0                 not null comment '浮点类型',
+    c_type            int            default 0                 not null comment '浮点类型',
+    sign_date         datetime                                 null,
+    value             decimal(19, 4)                           null,
+    region_province   varchar(50)                              null,
+    region_city       varchar(50)                              null,
+    region_district   varchar(50)                              null,
+    region_full       varchar(50)                              null,
+    region_address    varchar(50)                              null,
+    flag              int            default 0                 not null comment '业务状态',
+    status            tinyint(1)     default 1                 not null comment '状态',
+    remark            varchar(200)                             null comment '备注',
+    created_user_id   mediumtext                               null comment '创建者用户Id',
+    created_user_name varchar(30)                              null comment '创建者用户名',
+    created_time      datetime       default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_user_id   mediumtext                               null comment '更新者用户Id',
+    updated_user_name varchar(30)                              null comment '更新者用户名',
+    updated_time      datetime       default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted        tinyint(1)     default 0                 not null comment '软删除'
+)
+    comment '合同信息';
+
+create table contract_item
+(
+    id           bigint auto_increment comment '主键自增id'
+        primary key,
+    contract_id  bigint                                   not null,
+    name         varchar(100)                             null,
+    price        decimal(19, 4) default 0.0000            not null,
+    amount       decimal(10, 4) default 0.0000            not null,
+    value        decimal(10, 4) default 0.0000            not null,
+    remark       varchar(200)                             null,
+    created_time datetime       default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_time datetime       default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted   tinyint(1)     default 0                 not null comment '软删除'
+)
+    comment '合同明细';
+
+create table log_action
+(
+    id           bigint auto_increment comment '主键自增id'
+        primary key,
+    client_type  int      default 1                 not null comment '客户端类型',
+    type         int      default 1                 not null comment '操作类型',
+    operator     varchar(50)                        null comment '操作人',
+    class_name   varchar(500)                       null comment '实体包名',
+    local        varchar(50)                        null comment '用户名',
+    content      mediumtext                         null comment '操作内容',
+    created_time datetime default CURRENT_TIMESTAMP not null comment '创建时间'
+)
+    comment '操作日志';
+
+create table log_login
+(
+    id           bigint auto_increment comment '主键自增id'
+        primary key,
+    client_type  int      default 1                 not null comment '客户端类型',
+    user_id      bigint                             not null comment '用户id',
+    user_name    varchar(50)                        null comment '用户名',
+    cell_phone   varchar(30)                        null comment '手机号',
+    platform     varchar(30)                        null comment '登录平台',
+    ip           varchar(30)                        null comment 'ip',
+    user_agent   varchar(500)                       null comment 'UA',
+    created_time datetime default CURRENT_TIMESTAMP not null comment '创建时间'
+)
+    comment '登录日志';
+
+create table sys_handler
+(
+    id             bigint auto_increment comment '主键自增id'
+        primary key,
+    module_id      bigint                               not null comment '所属模块Id',
+    handler_name   varchar(100)                         null comment '模块名称',
+    alias_name     varchar(100)                         null comment '功能别名',
+    ref_controller varchar(200)                         null comment '关联控制器',
+    order_no       int        default 0                 not null comment '排序数字',
+    created_time   datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_time   datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted     tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '系统模块下的功能';
+
+create table sys_module
+(
+    id           bigint auto_increment comment '主键自增id'
+        primary key,
+    module_name  varchar(100)                         null comment '模块名称',
+    order_no     int        default 0                 not null comment '排序数字',
+    created_time datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_time datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted   tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '系统模块';
+
+create table sys_permit
+(
+    id           bigint auto_increment comment '主键自增id'
+        primary key,
+    handler_id   bigint                               not null comment '所属功能Id',
+    permit_name  varchar(100)                         null comment '模块名称',
+    alias_name   varchar(100)                         null comment '功能别名',
+    created_time datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_time datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted   tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '功能下的权限';
+
+create table sys_role
+(
+    id                bigint auto_increment comment '主键自增id'
+        primary key,
+    name              varchar(50)                          null comment '组名',
+    remark            varchar(200)                         null comment '备注',
+    is_super          tinyint(1) default 0                 not null comment '是否超级管理组',
+    status            tinyint(1) default 1                 not null comment '状态',
+    created_user_id   mediumtext                           null comment '创建者用户Id',
+    created_user_name varchar(30)                          null comment '创建者用户名',
+    created_time      datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_user_id   mediumtext                           null comment '更新者用户Id',
+    updated_user_name varchar(30)                          null comment '更新者用户名',
+    updated_time      datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted        tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '用户组';
+
+create table sys_role_permit
+(
+    id           bigint auto_increment comment '主键自增id'
+        primary key,
+    role_id      bigint                               not null comment '用户组Id',
+    permit_id    bigint                               not null comment '权限Id',
+    created_time datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_time datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted   tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '用户组所拥有的权限';
+
+create table sys_role_user
+(
+    id                bigint auto_increment comment '主键自增id'
+        primary key,
+    role_id           bigint                               null comment '组Id',
+    user_id           bigint                               null comment '用户Id',
+    created_user_id   mediumtext                           null comment '创建者用户Id',
+    created_user_name varchar(30)                          null comment '创建者用户名',
+    created_time      datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_user_id   mediumtext                           null comment '更新者用户Id',
+    updated_user_name varchar(30)                          null comment '更新者用户名',
+    updated_time      datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted        tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '用户组下的用户';
+
+create table sys_user
+(
+    id                bigint auto_increment comment '主键自增id'
+        primary key,
+    cell_phone        varchar(100)                         null comment '手机号',
+    login_name        varchar(100)                         null comment '登录名',
+    user_name         varchar(200)                         null comment '用户名',
+    job_name          varchar(50)                          null comment '岗位',
+    password          varchar(500)                         null comment '密码',
+    is_om             tinyint(1) default 1                 not null comment '运营系统管理权限',
+    is_mp             tinyint(1) default 1                 null comment '移动端登录权限',
+    is_super          tinyint(1) default 0                 null comment '是否超管',
+    avatar            varchar(500)                         null comment '头像',
+    wx_mp_open_id     varchar(500)                         null comment '微信公众号的OpenId',
+    last_login_time   datetime                             null comment '最后登录时间',
+    status            tinyint(1) default 1                 not null comment '状态',
+    remark            varchar(200)                         null comment '备注',
+    created_user_id   mediumtext                           null comment '创建者用户Id',
+    created_user_name varchar(30)                          null comment '创建者用户名',
+    created_time      datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_user_id   mediumtext                           null comment '更新者用户Id',
+    updated_user_name varchar(30)                          null comment '更新者用户名',
+    updated_time      datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted        tinyint(1) default 0                 not null comment '软删除',
+    constraint sys_user_pk
+        unique (cell_phone)
+)
+    comment '系统用户';
+
+create table tree
+(
+    id                bigint auto_increment comment '主键自增id'
+        primary key,
+    code              varchar(50)                          null comment '标识',
+    name              varchar(50)                          null comment '名称',
+    order_no          varchar(2000)                        null comment '排序数字',
+    parent_id         bigint                               null comment '父级id',
+    parent_name       varchar(50)                          null comment '父级名称',
+    full_id           varchar(2000)                        null comment '完整Id',
+    full_name         varchar(2000)                        null comment '完整名称',
+    full_order_no     varchar(2000)                        null comment '完整类别层级排序',
+    level_no          int                                  null comment '层级',
+    status            tinyint(1) default 1                 not null comment '状态',
+    remark            varchar(200)                         null comment '备注',
+    created_user_id   mediumtext                           null comment '创建者用户Id',
+    created_user_name varchar(30)                          null comment '创建者用户名',
+    created_time      datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
+    updated_user_id   mediumtext                           null comment '更新者用户Id',
+    updated_user_name varchar(30)                          null comment '更新者用户名',
+    updated_time      datetime   default CURRENT_TIMESTAMP not null comment '更新时间',
+    is_deleted        tinyint(1) default 0                 not null comment '软删除'
+)
+    comment '树形数据';
+
+create or replace view sys_user_om_view as
+select `a`.`id`                                               AS `id`,
+       `a`.`cell_phone`                                       AS `cell_phone`,
+       `a`.`login_name`                                       AS `login_name`,
+       `a`.`user_name`                                        AS `user_name`,
+       `a`.`job_name`                                         AS `job_name`,
+       `a`.`password`                                         AS `password`,
+       `a`.`is_om`                                            AS `is_om`,
+       `a`.`is_mp`                                            AS `is_mp`,
+       `a`.`is_super`                                         AS `is_super`,
+       `a`.`avatar`                                           AS `avatar`,
+       `a`.`wx_mp_open_id`                                    AS `wx_mp_open_id`,
+       `a`.`last_login_time`                                  AS `last_login_time`,
+       `a`.`status`                                           AS `status`,
+       `a`.`remark`                                           AS `remark`,
+       `a`.`created_user_id`                                  AS `created_user_id`,
+       `a`.`created_user_name`                                AS `created_user_name`,
+       `a`.`created_time`                                     AS `created_time`,
+       `a`.`updated_user_id`                                  AS `updated_user_id`,
+       `a`.`updated_user_name`                                AS `updated_user_name`,
+       `a`.`updated_time`                                     AS `updated_time`,
+       `a`.`is_deleted`                                       AS `is_deleted`,
+       ifnull(group_concat(`ru`.`role_id` separator ','), '') AS `role_ids`,
+       ifnull(group_concat(`sr`.`name` separator ','), '')    AS `role_names`
+from ((`spring_boot_demo`.`sys_user` `a` left join `spring_boot_demo`.`sys_role_user` `ru`
+       on (((`a`.`id` = `ru`.`user_id`) and (`ru`.`is_deleted` = 0)))) left join `spring_boot_demo`.`sys_role` `sr`
+      on (((`sr`.`id` = `ru`.`role_id`) and (`sr`.`is_deleted` = 0))))
+where (`a`.`is_deleted` = 0)
+group by `a`.`id`;
+
+-- comment on column sys_user_om_view.id not supported: 主键自增id
+
+-- comment on column sys_user_om_view.cell_phone not supported: 手机号
+
+-- comment on column sys_user_om_view.login_name not supported: 登录名
+
+-- comment on column sys_user_om_view.user_name not supported: 用户名
+
+-- comment on column sys_user_om_view.job_name not supported: 岗位
+
+-- comment on column sys_user_om_view.password not supported: 密码
+
+-- comment on column sys_user_om_view.is_om not supported: 运营系统管理权限
+
+-- comment on column sys_user_om_view.is_mp not supported: 移动端登录权限
+
+-- comment on column sys_user_om_view.is_super not supported: 是否超管
+
+-- comment on column sys_user_om_view.avatar not supported: 头像
+
+-- comment on column sys_user_om_view.wx_mp_open_id not supported: 微信公众号的OpenId
+
+-- comment on column sys_user_om_view.last_login_time not supported: 最后登录时间
+
+-- comment on column sys_user_om_view.status not supported: 状态
+
+-- comment on column sys_user_om_view.remark not supported: 备注
+
+-- comment on column sys_user_om_view.created_user_id not supported: 创建者用户Id
+
+-- comment on column sys_user_om_view.created_user_name not supported: 创建者用户名
+
+-- comment on column sys_user_om_view.created_time not supported: 创建时间
+
+-- comment on column sys_user_om_view.updated_user_id not supported: 更新者用户Id
+
+-- comment on column sys_user_om_view.updated_user_name not supported: 更新者用户名
+
+-- comment on column sys_user_om_view.updated_time not supported: 更新时间
+
+-- comment on column sys_user_om_view.is_deleted not supported: 软删除
+
+create procedure sp_update_tree_layer()
+BEGIN
+    -- 使用递归CTE来构建层级结构
+    WITH RECURSIVE p AS (
+        SELECT
+            a.id,
+            a.name,
+            a.order_no,
+            CAST('' AS CHAR(255)) AS parent_name,  -- 显式定义初始长度
+            CAST(CONCAT('|', a.id, '|') AS CHAR(1000)) AS full_id,
+            a.name AS full_name,
+            1 AS level_no,
+            a.order_no AS full_order_no
+        FROM Tree a
+        WHERE a.parent_id = 0 and a.is_deleted = 0
+        UNION ALL
+        SELECT
+            a.id,
+            a.`name`,
+            a.order_no,
+            CAST(p.`name` AS CHAR(255)) AS parent_name,
+            CAST(LEFT(CONCAT(p.full_id, a.id, '|'), 1000) AS CHAR(1000)) AS full_id,
+            CAST(LEFT(CONCAT(p.full_name, '|', a.name), 1000) AS CHAR(1000)) AS full_name,
+            (p.level_no + 1) AS level_no,
+            LEFT(CONCAT(p.full_order_no, '|', a.order_no),2000) AS full_order_no
+        FROM Tree a
+                 INNER JOIN p ON a.parent_id = p.id where a.is_deleted = 0
+    )
+    -- 更新Tree表中的层级信息
+    UPDATE Tree q
+        INNER JOIN p ON q.id = p.id
+    SET
+        q.parent_name = p.parent_name,
+        q.full_id = LEFT(p.full_id, 1000),       -- 在赋值时再次截断，保险
+        q.full_name = LEFT(p.full_name, 1000),
+        q.level_no = p.level_no,
+        q.full_order_no = LEFT(p.full_order_no, 1000);
+END;
+

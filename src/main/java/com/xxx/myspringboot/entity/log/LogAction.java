@@ -31,10 +31,27 @@ public class LogAction implements Serializable {
      */
     private Integer clientType;
 
+    public String getClientTypeName() {
+        return switch (clientType) {
+            case 1 -> "后台";
+            case 2 -> "移动端";
+            default -> "未知";
+        };
+    }
+
     /**
      * 操作类型
      */
     private Integer type;
+
+    public String getTypeName() {
+        return switch (type) {
+            case 1 -> "添加";
+            case 2 -> "修改";
+            case 3 -> "删除";
+            default -> "未知";
+        };
+    }
 
     /**
      * 操作人
@@ -61,5 +78,5 @@ public class LogAction implements Serializable {
      */
     @TableField(value = "created_time", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdTime;
+    private LocalDateTime createdTime = LocalDateTime.now();
 }

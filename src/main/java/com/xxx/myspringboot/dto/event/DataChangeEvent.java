@@ -12,6 +12,7 @@ public class DataChangeEvent {
 //    }
 
     private SqlCommandType changeType; // 操作类型
+    private Integer clientType;            // 客户端类型
     private Object oldData;            // 变更前数据（JSON字符串或实体）
     private Object newData;            // 变更后数据
     private String operator;           // 操作人（从ThreadLocal或安全上下文获取）

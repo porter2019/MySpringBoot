@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
+import com.xxx.myspringboot.common.CurrentConst;
+import com.xxx.myspringboot.dto.AuditContext;
+import com.xxx.myspringboot.dto.AuditInfo;
 import com.xxx.myspringboot.dto.input.SysRole.SysRolePageInput;
 import com.xxx.myspringboot.dto.input.SysRole.SysRoleUpdatePermitInput;
 import com.xxx.myspringboot.entity.sys.SysRole;
@@ -31,6 +34,7 @@ import java.util.List;
 @Validated
 @PermissionHandler(module = "系统管理", handler = "角色组", alias = "SysRole")
 public class SysRoleController {
+    private final static String logPath = "系统管理 - 角色组";
 
     @Resource
     private ISysRoleService sysRoleService;
@@ -59,9 +63,14 @@ public class SysRoleController {
     @PostMapping("add")
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
-    public ApiResult Add(@RequestBody SysRole entity) {
-        entity.setIsSuper(false);
-        sysRoleService.save(entity);
+    public ApiResult Add(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestBody SysRole entity) {
+        AuditContext.set(new AuditInfo(StpUtil.getSession().getString(CurrentConst.UserName), logPath, client));
+        try {
+            entity.setIsSuper(false);
+            sysRoleService.save(entity);
+        } finally {
+            AuditContext.clear();
+        }
         return ApiResult.success("添加成功");
     }
 
@@ -77,26 +86,26 @@ public class SysRoleController {
     @PostMapping("edit")
     @Operation(summary = "修改")
     @PermissionAction(name = "修改", alias = "edit")
-    public ApiResult Edit(@RequestBody SysRole entity) {
-        sysRoleService.updateById(entity);
+    public ApiResult Edit(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestBody SysRole entity) {
+        AuditContext.set(new AuditInfo(StpUtil.getSession().getString(CurrentConst.UserName), logPath, client));
+        try {
+            sysRoleService.updateById(entity);
+        } finally {
+            AuditContext.clear();
+        }
         return ApiResult.success("修改成功");
     }
 
     @DeleteMapping("delete")
     @Operation(summary = "删除")
     @PermissionAction(name = "删除", alias = "delete")
-    public ApiResult Delete(@RequestParam @NotBlank String ids) {
-        List<Long> idList = Arrays.stream(StringUtils.split(ids, ','))
-                .filter(StringUtils::isNotBlank)
-                .map(x -> Long.parseLong(x.trim()))
-                .toList();
+    public ApiResult Delete(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestParam @NotBlank String ids) {
+        List<Long> idList = Arrays.stream(StringUtils.split(ids, ',')).filter(StringUtils::isNotBlank).map(x -> Long.parseLong(x.trim())).toList();
 
         if (idList.isEmpty()) {
             return ApiResult.failed("ids 无效");
         }
-
         sysRoleService.removeByIds(idList);
-
         return ApiResult.success("删除成功");
     }
 
@@ -127,10 +136,7 @@ public class SysRoleController {
     @GetMapping("get/role/permits")
     @Operation(summary = "根据角色组ids获取所拥有的权限码")
     public ApiResult GetPermissionCodesByRoleIds(@RequestParam @NotBlank String roleIds) {
-        List<Long> roleIdList = Arrays.stream(StringUtils.split(roleIds, ','))
-                .filter(StringUtils::isNotBlank)
-                .map(x -> Long.parseLong(x.trim()))
-                .toList();
+        List<Long> roleIdList = Arrays.stream(StringUtils.split(roleIds, ',')).filter(StringUtils::isNotBlank).map(x -> Long.parseLong(x.trim())).toList();
         var data = sysPermitService.getPermissionCodesByRoleIds(roleIdList);
         return ApiResult.success(data);
     }
