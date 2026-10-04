@@ -48,7 +48,17 @@ server:
   servlet:
     context-path: /api # 接口统一前缀
   port: 8080 # 启动的端口号
-
+mqtt:
+  enable: false
+  broker-url: tcp://IP:1833
+  client-id: spring-mqtt-client
+  username: 用户名
+  password: 密码
+  qos-in: 1 #订阅qos,0最多一次;1至少一次;2:仅一次
+  qos-out: 1 #发布消息默认的qos
+  topics: #订阅的主题,多组
+    - testtopic/xxx
+    - testtopic/123
 knife4j:
   basic:
     enable: true #启用接口文档
