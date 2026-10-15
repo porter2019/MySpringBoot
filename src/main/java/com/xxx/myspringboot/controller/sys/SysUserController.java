@@ -14,18 +14,17 @@ import com.xxx.myspringboot.entity.sys.SysUserOMView;
 import com.xxx.myspringboot.service.sys.ISysPermitService;
 import com.xxx.myspringboot.service.sys.ISysUserOMViewService;
 import com.xxx.myspringboot.service.sys.ISysUserService;
+import com.xxx.myspringboot.util.MyStringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 /**
  * 系统用户
@@ -96,11 +95,7 @@ public class SysUserController {
     @Operation(summary = "删除")
     @PermissionAction(name = "删除", alias = "delete")
     public ApiResult Delete(@RequestParam @NotBlank String ids) {
-        List<Long> idList = Arrays.stream(StringUtils.split(ids, ','))
-                .filter(StringUtils::isNotBlank)
-                .map(x -> Long.parseLong(x.trim()))
-                .toList();
-
+        Set<Long> idList = MyStringUtil.splitWithComma(ids, Long::parseLong);
         if (idList.isEmpty()) {
             return ApiResult.failed("ids 无效");
         }
@@ -117,7 +112,6 @@ public class SysUserController {
             return ApiResult.failed("数据不存在");
         }
         var newStatus = !entity.getStatus();
-        var newStatusText = newStatus ? "已启用" : "已禁用";
 
         var updateWrapper = new LambdaUpdateWrapper<SysUser>();
         updateWrapper.eq(SysUser::getId, entity.getId())
@@ -127,7 +121,7 @@ public class SysUserController {
                 .set(SysUser::getUpdatedTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
 
-        return ApiResult.success(newStatusText);
+        return ApiResult.success(newStatus ? "已启用" : "已禁用");
     }
 
     @GetMapping("switch/isom")
@@ -138,7 +132,6 @@ public class SysUserController {
             return ApiResult.failed("数据不存在");
         }
         var newStatus = !entity.getIsOM();
-        var newStatusText = newStatus ? "已启用" : "已禁用";
 
         var updateWrapper = new LambdaUpdateWrapper<SysUser>();
         updateWrapper.eq(SysUser::getId, entity.getId())
@@ -148,7 +141,7 @@ public class SysUserController {
                 .set(SysUser::getUpdatedTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
 
-        return ApiResult.success(newStatusText);
+        return ApiResult.success(newStatus ? "已启用" : "已禁用");
     }
 
     @GetMapping("switch/ismp")
@@ -159,7 +152,6 @@ public class SysUserController {
             return ApiResult.failed("数据不存在");
         }
         var newStatus = !entity.getIsMP();
-        var newStatusText = newStatus ? "已启用" : "已禁用";
 
         var updateWrapper = new LambdaUpdateWrapper<SysUser>();
         updateWrapper.eq(SysUser::getId, entity.getId())
@@ -169,7 +161,7 @@ public class SysUserController {
                 .set(SysUser::getUpdatedTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
 
-        return ApiResult.success(newStatusText);
+        return ApiResult.success(newStatus ? "已启用" : "已禁用");
     }
 
     @GetMapping("get/ids/by/permission")

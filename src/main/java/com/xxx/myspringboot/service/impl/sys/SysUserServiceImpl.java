@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 系统用户 服务实现类
@@ -81,7 +82,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     // 删除
     @Transactional
-    public boolean Delete(List<Long> idList) {
+    public boolean Delete(Set<Long> idList) {
         if (idList.isEmpty()) {
             return false;
         }

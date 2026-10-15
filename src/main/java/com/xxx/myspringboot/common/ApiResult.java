@@ -1,6 +1,6 @@
 package com.xxx.myspringboot.common;
 
-import com.xxx.myspringboot.util.EnumOptionUtils;
+import com.xxx.myspringboot.util.EnumOptionUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -175,7 +175,7 @@ public class ApiResult implements Serializable {
      * @param enums 枚举选项
      * @return ApiResult
      */
-    public ApiResult withEnums(List<EnumOptionUtils.EnumGroupVO> enums) {
+    public ApiResult withEnums(List<EnumOptionUtil.EnumGroupVO> enums) {
         return withExtra("Enums", enums);
     }
 

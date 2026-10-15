@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class EnumOptionUtils {
+public class EnumOptionUtil {
     public static List<EnumGroupVO> buildEnumList(
             List<Class<? extends Enum<?>>> classes,
             List<String> keys) {

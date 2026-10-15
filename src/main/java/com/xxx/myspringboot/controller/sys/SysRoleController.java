@@ -13,6 +13,7 @@ import com.xxx.myspringboot.dto.input.SysRole.SysRoleUpdatePermitInput;
 import com.xxx.myspringboot.entity.sys.SysRole;
 import com.xxx.myspringboot.service.sys.ISysPermitService;
 import com.xxx.myspringboot.service.sys.ISysRoleService;
+import com.xxx.myspringboot.util.MyStringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 用户组
@@ -100,8 +102,7 @@ public class SysRoleController {
     @Operation(summary = "删除")
     @PermissionAction(name = "删除", alias = "delete")
     public ApiResult Delete(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestParam @NotBlank String ids) {
-        List<Long> idList = Arrays.stream(StringUtils.split(ids, ',')).filter(StringUtils::isNotBlank).map(x -> Long.parseLong(x.trim())).toList();
-
+        Set<Long> idList = MyStringUtil.splitWithComma(ids, Long::parseLong);
         if (idList.isEmpty()) {
             return ApiResult.failed("ids 无效");
         }

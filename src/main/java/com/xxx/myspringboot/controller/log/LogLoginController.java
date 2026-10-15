@@ -6,17 +6,17 @@ import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.dto.input.log.LogLoginPageInput;
 import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
 import com.xxx.myspringboot.service.log.ILogLoginService;
-import com.xxx.myspringboot.util.EnumOptionUtils;
+import com.xxx.myspringboot.util.EnumOptionUtil;
+import com.xxx.myspringboot.util.MyStringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 登录日志 前端控制器
@@ -35,15 +35,14 @@ public class LogLoginController {
     @PermissionAction(name = "查看", alias = "show")
     public ApiResult GetPageList(@RequestBody LogLoginPageInput req) {
         var data = logLoginService.getPageList(req);
-        return ApiResult.success(data).withEnums(EnumOptionUtils.buildEnumList(List.of(ContractTypeEnum.class, ContractTypeEnum.class), List.of("CType", "CType2")));
+        return ApiResult.success(data).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractTypeEnum.class), List.of("CType", "CType2")));
     }
 
     @DeleteMapping("delete")
     @Operation(summary = "删除")
     @PermissionAction(name = "删除", alias = "delete")
     public ApiResult Delete(@RequestParam @NotBlank String ids) {
-        List<Long> idList = Arrays.stream(StringUtils.split(ids, ',')).filter(StringUtils::isNotBlank).map(x -> Long.parseLong(x.trim())).toList();
-
+        Set<Long> idList = MyStringUtil.splitWithComma(ids, Long::parseLong);
         if (idList.isEmpty()) {
             return ApiResult.failed("ids 无效");
         }
