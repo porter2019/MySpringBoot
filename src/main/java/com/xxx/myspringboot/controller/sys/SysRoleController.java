@@ -102,7 +102,7 @@ public class SysRoleController {
     @Operation(summary = "删除")
     @PermissionAction(name = "删除", alias = "delete")
     public ApiResult Delete(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestParam @NotBlank String ids) {
-        Set<Long> idList = MyStringUtil.splitWithComma(ids, Long::parseLong);
+        Set<Long> idList = MyStringUtil.splitWithCommaToSet(ids, Long::parseLong);
         if (idList.isEmpty()) {
             return ApiResult.failed("ids 无效");
         }
