@@ -2,7 +2,6 @@ package com.xxx.myspringboot.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
@@ -27,7 +26,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -52,7 +50,7 @@ public class ContractController {
     @PermissionAction(name = "查看", alias = "show")
     public ApiResult GetPageList(@RequestBody ContractPageInput req) {
         var data = contractService.getPageList(req);
-        return ApiResult.success(data).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractTypeEnum.class), List.of("CType", "CType2")));
+        return ApiResult.success(data).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractFlagEnum.class), List.of("CType", "Flag")));
     }
 
     @GetMapping("/get/info")
@@ -64,7 +62,7 @@ public class ContractController {
         } else {
             entity.setItemList(contractItemService.list(new LambdaQueryWrapper<ContractItem>().eq(ContractItem::getContractId, id).orderByAsc(ContractItem::getSort)));
         }
-        return ApiResult.success(entity).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class), List.of("CType")));
+        return ApiResult.success(entity).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractFlagEnum.class), List.of("CType", "Flag")));
     }
 
     @PostMapping("add")
