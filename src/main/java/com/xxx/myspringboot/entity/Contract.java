@@ -3,6 +3,7 @@ package com.xxx.myspringboot.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.xxx.myspringboot.entity.base.BaseEntityStandard;
+import com.xxx.myspringboot.entity.enums.ContractFlagEnum;
 import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
@@ -82,12 +83,22 @@ public class Contract extends BaseEntityStandard {
     /**
      * 审批状态
      */
-    private Integer flag;
+    private ContractFlagEnum flag = ContractFlagEnum.Draft;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getFlagText() {
+        return flag == null ? null : flag.getDesc();
+    }
 
     /**
      * 状态
      */
     private Boolean status = true;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getStatusText() {
+        return status ? "启用" : "禁用";
+    }
 
     /**
      * 备注

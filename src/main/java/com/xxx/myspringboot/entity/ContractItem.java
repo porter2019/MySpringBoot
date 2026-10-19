@@ -48,4 +48,9 @@ public class ContractItem extends BaseEntity {
      * 备注
      */
     private String remark;
+
+    /**
+     * 排序数字, 升序排列
+     */
+    private Integer sort;
 }
