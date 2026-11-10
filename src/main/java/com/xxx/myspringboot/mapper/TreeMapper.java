@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Select;
 public interface TreeMapper extends BaseMapper<Tree> {
 
     /**
-     * 调用名为sp_update_tree_layer的存储过程
+     * 调用存储过程
      * 该存储过程用于更新树形结构的层级关系
      * 使用@Select注解来执行SQL语句
      * 花括号{}表示执行存储过程而非SQL查询

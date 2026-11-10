@@ -38,14 +38,14 @@ public class SysDirectoryCategory extends BaseEntityTree {
      */
     @TableField(exist = false)
     @JsonIgnoreProperties({"parent", "childs"})
-    private SysOrg parent;
+    private SysDirectoryCategory parent;
 
     /**
      * 子级列表
      */
     @TableField(exist = false)
     @JsonManagedReference
-    private List<SysOrg> childs;
+    private List<SysDirectoryCategory> childs;
 
     /*
     create table sys_directory_category

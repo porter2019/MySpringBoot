@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xxx.myspringboot.mapper.sys.SysDirectoryCategoryMapper">
+    <delete id="deleteWithChildren">
+        DELETE
+        FROM sys_directory_category
+        WHERE id IN (WITH RECURSIVE t AS (SELECT id
+                                          FROM sys_directory_category
+                                          WHERE id = #{id}
+                                          UNION ALL
+                                          SELECT t2.id
+                                          FROM sys_directory_category t2
+                                                   INNER JOIN t t1 ON t2.parent_id = t1.id)
+                     SELECT id
+                     FROM t)
+    </delete>
+</mapper>

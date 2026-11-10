@@ -4,10 +4,12 @@ import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xxx.myspringboot.common.PublicConst;
+import com.xxx.myspringboot.entity.sys.SysPostUser;
 import com.xxx.myspringboot.entity.sys.SysRoleUser;
 import com.xxx.myspringboot.entity.sys.SysUser;
 import com.xxx.myspringboot.entity.sys.SysUserOMView;
 import com.xxx.myspringboot.mapper.sys.SysUserMapper;
+import com.xxx.myspringboot.service.sys.ISysPostUserService;
 import com.xxx.myspringboot.service.sys.ISysRoleUserService;
 import com.xxx.myspringboot.service.sys.ISysUserService;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
@@ -28,7 +30,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Resource
     private ISysRoleUserService sysRoleUserService;
 
-    // 添加用户及所属的用户组
+    @Resource
+    private ISysPostUserService sysPostUserService;
+
+    // 添加用户及所属的角色和岗位
     @Transactional(rollbackFor = Exception.class)
     public long Add(SysUserOMView entity) {
         entity.setIsSuper(false);
@@ -46,6 +51,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             userRoleList.add(role);
         }
         sysRoleUserService.saveBatch(userRoleList);
+
+        //岗位
+        List<SysPostUser> userPostList = new ArrayList<>();
+        for (long x : entity.getPostIdArray()) {
+            var post = new SysPostUser();
+            post.setUserId(entity.getId());
+            post.setPostId(x);
+            userPostList.add(post);
+        }
+        sysPostUserService.saveBatch(userPostList);
 
 
         return entity.getId();
@@ -77,6 +92,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             userRoleList.add(role);
         }
         sysRoleUserService.saveBatch(userRoleList);
+
+        //先删除原来的岗位信息
+        var deletePostWrapper = new LambdaQueryWrapper<SysPostUser>();
+        deletePostWrapper.eq(SysPostUser::getUserId, entity.getId());
+        sysPostUserService.remove(deletePostWrapper);
+        //添加新的岗位
+        List<SysPostUser> userPostList = new ArrayList<>();
+        for (long x : entity.getPostIdArray()) {
+            var post = new SysPostUser();
+            post.setUserId(entity.getId());
+            post.setPostId(x);
+            userPostList.add(post);
+        }
+        sysPostUserService.saveBatch(userPostList);
+
         return true;
     }
 
@@ -91,6 +121,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         var roleUserLambdaQueryWrapper = new LambdaQueryWrapper<SysRoleUser>();
         roleUserLambdaQueryWrapper.in(SysRoleUser::getUserId, idList);
         sysRoleUserService.remove(roleUserLambdaQueryWrapper);
+
+        //删除岗位
+        var postUserLambdaQueryWrapper = new LambdaQueryWrapper<SysPostUser>();
+        postUserLambdaQueryWrapper.in(SysPostUser::getUserId, idList);
+        sysPostUserService.remove(postUserLambdaQueryWrapper);
 
         //循环修改手机号，保证手机号都是唯一的
         long timestamp = System.currentTimeMillis();
