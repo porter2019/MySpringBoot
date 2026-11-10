@@ -64,7 +64,7 @@ public class LogAction implements Serializable {
     private String className;
 
     /**
-     * 用户名
+     * 位置
      */
     private String local;
 
@@ -79,4 +79,19 @@ public class LogAction implements Serializable {
     @TableField(value = "created_time", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime = LocalDateTime.now();
+
+    /*
+    create table log_action
+(
+  id           bigint               auto_increment comment '主键自增id',
+  client_type  int              default 0 not null comment '客户端类型',
+  `type`       int              default 0 not null comment '操作类型',
+  operator     varchar(30)                    null comment '操作人',
+  class_name   varchar(200)                   null comment '实体包名',
+  `local`      varchar(200)                   null comment '位置',
+  content      mediumint                      null comment '操作内容',
+  created_time datetime     default now() not null comment '创建时间',
+  primary key (id)
+) comment '操作日志';
+     */
 }

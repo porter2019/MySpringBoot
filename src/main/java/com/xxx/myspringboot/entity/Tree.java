@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.xxx.myspringboot.entity.base.BaseEntityStandard;
+import com.xxx.myspringboot.entity.base.BaseEntityTree;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -16,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class Tree extends BaseEntityStandard {
+public class Tree extends BaseEntityTree {
 
     private static final long serialVersionUID = 1L;
 
@@ -29,51 +30,6 @@ public class Tree extends BaseEntityStandard {
      * 名称
      */
     private String name;
-
-    /**
-     * 排序数字
-     */
-    private String orderNo;
-
-    /**
-     * 父级id
-     */
-    private Long parentId;
-
-    /**
-     * 父级名称
-     */
-    private String parentName;
-
-    /**
-     * 完整Id
-     */
-    private String fullId;
-
-    /**
-     * 完整名称
-     */
-    private String fullName;
-
-    /**
-     * 完整类别层级排序
-     */
-    private String fullOrderNo;
-
-    /**
-     * 层级
-     */
-    private Integer levelNo;
-
-    /**
-     * 状态
-     */
-    private Boolean status = true;
-
-    /**
-     * 备注
-     */
-    private String remark;
 
     /**
      * 上级信息
@@ -93,14 +49,16 @@ public class Tree extends BaseEntityStandard {
       create table tree
       (
           id                bigint auto_increment comment '主键自增id',
+
           code              varchar(50)              null comment '标识',
           name              varchar(50)              null comment '名称',
+
           order_no          varchar(2000)            null comment '排序数字',
           parent_id         bigint                   null comment '父级id',
           parent_name       varchar(50)              null comment '父级名称',
           full_id           varchar(2000)            null comment '完整Id',
           full_name         varchar(2000)            null comment '完整名称',
-          full_order_no     varchar(2000)            null comment '完整类别层级排序',
+          full_order_no         varchar(2000)            null comment '完整类别层级排序',
           level_no          int                      null comment '层级',
           status            tinyint(1) default 1     not null comment '状态',
           remark            varchar(200)             null comment '备注',

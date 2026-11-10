@@ -45,4 +45,27 @@ public class SysUserOMView extends SysUser {
         return Arrays.stream(roleNames.split(",")).filter(StringUtils::isNotBlank).toArray(String[]::new);
     }
 
+    /**
+     * 该用户所拥有的岗位ids
+     */
+    @TableField("post_ids")
+    private String postIds;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public long[] getPostIdArray() {
+        if (StringUtils.isBlank(roleIds)) return new long[0];
+        return Arrays.stream(roleIds.split(",")).filter(StringUtils::isNotBlank).mapToLong(Long::parseLong).toArray();
+    }
+
+    /**
+     * 该用户所拥有的岗位names
+     */
+    @TableField("post_names")
+    private String postNames;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String[] getPostNames() {
+        if (StringUtils.isBlank(postNames)) return new String[0];
+        return Arrays.stream(postNames.split(",")).filter(StringUtils::isNotBlank).toArray(String[]::new);
+    }
 }

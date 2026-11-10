@@ -1,0 +1,12 @@
+#字典项完整信息
+DROP VIEW IF EXISTS sys_directory_item_full_view;
+
+CREATE VIEW sys_directory_item_full_view AS
+SELECT
+    a.*,
+    sdc.name category_name,
+    sdc.code category_code
+FROM sys_directory_item a
+LEFT JOIN sys_directory_category sdc on a.category_id  = sdc.id and sdc.is_deleted = 0
+WHERE a.is_deleted = 0
+GROUP BY a.id;

@@ -77,12 +77,12 @@ public class PermissionSyncService {
             if (entityModule == null) {
                 entityModule = new SysModule();
                 entityModule.setModuleName(moduleName);
-                entityModule.setOrderNo(orderNo);
+                entityModule.setSort(orderNo);
                 sysModuleMapper.insert(entityModule);
                 log.info("【权限数据初始化】新增模块:{},排序:{},数据编号:{}",
                         moduleName, orderNo, entityModule.getId());
-            } else if (!Objects.equals(entityModule.getOrderNo(), orderNo)) {
-                entityModule.setOrderNo(orderNo);
+            } else if (!Objects.equals(entityModule.getSort(), orderNo)) {
+                entityModule.setSort(orderNo);
                 sysModuleMapper.updateById(entityModule);
                 log.info("【权限数据初始化】修改模块排序:{},排序:{}", moduleName, orderNo);
             }
@@ -135,7 +135,7 @@ public class PermissionSyncService {
                 newHandler.setModuleId(moduleEntity.getId());
                 newHandler.setHandlerName(handlerName);
                 newHandler.setAliasName(handlerAliasName);
-                newHandler.setOrderNo(handlerAttr.orderNo());
+                newHandler.setSort(handlerAttr.orderNo());
                 newHandler.setRefController(controllerFullName);
                 handlerMapper.insert(newHandler);
                 handlerId = newHandler.getId();
@@ -146,7 +146,7 @@ public class PermissionSyncService {
                 entityHandler.setModuleId(moduleEntity.getId());
                 entityHandler.setHandlerName(handlerName);
                 entityHandler.setAliasName(handlerAliasName);
-                entityHandler.setOrderNo(handlerAttr.orderNo());
+                entityHandler.setSort(handlerAttr.orderNo());
                 handlerMapper.updateById(entityHandler);
                 log.info("【权限数据初始化】修改功能：{}，所属模块：{}，命名空间：{}",
                         handlerName, moduleName, controllerFullName);

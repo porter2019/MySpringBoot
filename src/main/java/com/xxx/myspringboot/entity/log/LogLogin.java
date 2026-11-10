@@ -75,4 +75,20 @@ public class LogLogin implements Serializable {
     @TableField(value = "created_time", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime = LocalDateTime.now();
+
+    /*
+    create table log_login
+(
+  id           bigint               auto_increment comment '主键自增id',
+  client_type  int              default 0 not null comment '客户端类型',
+  user_id      bigint                     not null comment '用户id',
+  user_name    varchar(30)                    null comment '用户名',
+  cell_phone   varchar(20)                    null comment '手机号',
+  platform     varchar(30)                    null comment '登录平台',
+  ip           varchar(30)                    null comment 'IP',
+  user_agent   varchar(500)                   null comment 'UA',
+  created_time datetime     default now() not null comment '创建时间',
+  primary key (id)
+) comment '登陆日志';
+     */
 }

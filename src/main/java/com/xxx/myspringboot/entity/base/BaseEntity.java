@@ -57,7 +57,7 @@ public class BaseEntity implements Serializable {
           created_time      datetime   default now() not null comment '创建时间',
           updated_time      datetime   default now() not null comment '更新时间',
           is_deleted        boolean    default false not null comment '软删除',
-          constraint 表名_pk  primary key (id)
+          primary key (id)
       )
           comment '表说明';
      */

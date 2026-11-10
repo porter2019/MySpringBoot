@@ -19,7 +19,7 @@ spring:
       accept-case-insensitive-properties: true # 传入的参数大小写不敏感
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/spring_boot_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
+    url: jdbc:mysql://localhost:3306/my_spring_boot?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
     username: root
     password: Mysql@8
   data:
