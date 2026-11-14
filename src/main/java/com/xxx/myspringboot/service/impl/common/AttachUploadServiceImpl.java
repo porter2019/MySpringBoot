@@ -54,7 +54,7 @@ public class AttachUploadServiceImpl implements IAttachUploadService {
             folder = "attach";
         }
 
-        // 关键：统一转成绝对路径，兼容 ./ 和 /app/wwwroot 两种写法
+        // 统一转成绝对路径，兼容 ./ 和 /app/wwwroot 两种写法
         Path webRoot = Paths.get(webRootPath).toAbsolutePath().normalize();
 
         // 对应 var baseIODirectory = App.WebHostEnvironment.WebRootPath;

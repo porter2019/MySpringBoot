@@ -8,23 +8,21 @@ import com.xxx.myspringboot.dto.output.permit.SysRoleModuleGroupOutput;
 import com.xxx.myspringboot.dto.output.permit.SysRolePermitOutput;
 import com.xxx.myspringboot.entity.sys.SysRole;
 import com.xxx.myspringboot.entity.sys.SysRolePermit;
+import com.xxx.myspringboot.entity.sys.SysRoleUser;
 import com.xxx.myspringboot.mapper.sys.SysPermitMapper;
 import com.xxx.myspringboot.mapper.sys.SysRoleMapper;
 import com.xxx.myspringboot.mapper.sys.SysRolePermitMapper;
+import com.xxx.myspringboot.mapper.sys.SysRoleUserMapper;
 import com.xxx.myspringboot.service.sys.ISysRoleService;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> implements ISysRoleService {
 
+    private final SysRoleUserMapper sysRoleUserMapper;
     private final SysPermitMapper sysPermitMapper;
     private final SysRolePermitMapper sysRolePermitMapper;
 
@@ -48,6 +47,29 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         wrapper.like(StringUtils.isNotBlank(input.getName()), SysRole::getName, input.getName());
 
         return baseMapper.myPageQuery(wrapper, input.getPageInfo());
+    }
+
+    /**
+     * 批量删除
+     *
+     * @param idList id列表
+     * @return 是否成功
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean delete(Set<Long> idList) {
+        removeByIds(idList);
+
+        //删除用户
+        var deleteWrapper = new LambdaQueryWrapper<SysRoleUser>();
+        deleteWrapper.in(SysRoleUser::getRoleId, idList);
+        sysRoleUserMapper.delete(deleteWrapper);
+
+        //删除权限
+        var permitWrapper = new LambdaQueryWrapper<SysRolePermit>();
+        permitWrapper.in(SysRolePermit::getRoleId, idList);
+        sysRolePermitMapper.delete(permitWrapper);
+
+        return true;
     }
 
     /**
@@ -73,7 +95,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
             for (Map.Entry<String, List<SysRolePermitOutput>> handlerEntry : handlerGroup.entrySet()) {
                 SysRoleHandlerGroupOutput handlerModel = new SysRoleHandlerGroupOutput(handlerEntry.getKey());
-                handlerEntry.getValue().sort(Comparator.comparingInt(SysRolePermitOutput::getOrderNo).reversed());
+                handlerEntry.getValue().sort(Comparator.comparingInt(SysRolePermitOutput::getSort).reversed());
                 handlerModel.setPermitList(handlerEntry.getValue());
                 moduleModel.getHandlerList().add(handlerModel);
             }

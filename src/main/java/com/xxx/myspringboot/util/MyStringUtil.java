@@ -1,5 +1,6 @@
 package com.xxx.myspringboot.util;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -63,5 +64,28 @@ public final class MyStringUtil {
                 .filter(StringUtils::isNotBlank)
                 .map(mapper)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 将分号分隔的字符串分割并转换为供sql过滤时间的集合，第二个日期做了+1天处理
+     *
+     * @param str 输入的字符串，元素以分号分隔
+     * @return 转换后的LocalDate数组，如果输入字符串为空则返回空数组
+     */
+    public static LocalDate[] splitWithSemicolonToSqlDateArray(String str) {
+        if (StringUtils.isBlank(str)) {
+            return new LocalDate[0];
+        }
+        var arr = StringUtils.split(str, ';');
+        if (arr.length != 2) {
+            return new LocalDate[0];
+        }
+        try {
+            var time1 = LocalDate.parse(arr[0]);
+            var time2 = LocalDate.parse(arr[1]).plusDays(1);
+            return new LocalDate[]{time1, time2};
+        } catch (Exception ignored) {
+            return new LocalDate[0];
+        }
     }
 }

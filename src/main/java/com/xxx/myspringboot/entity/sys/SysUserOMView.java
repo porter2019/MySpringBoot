@@ -39,11 +39,6 @@ public class SysUserOMView extends SysUser {
     @TableField("role_names")
     private String roleNames;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    public String[] getRoleNames() {
-        if (StringUtils.isBlank(roleNames)) return new String[0];
-        return Arrays.stream(roleNames.split(",")).filter(StringUtils::isNotBlank).toArray(String[]::new);
-    }
 
     /**
      * 该用户所拥有的岗位ids
@@ -53,8 +48,8 @@ public class SysUserOMView extends SysUser {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public long[] getPostIdArray() {
-        if (StringUtils.isBlank(roleIds)) return new long[0];
-        return Arrays.stream(roleIds.split(",")).filter(StringUtils::isNotBlank).mapToLong(Long::parseLong).toArray();
+        if (StringUtils.isBlank(postIds)) return new long[0];
+        return Arrays.stream(postIds.split(",")).filter(StringUtils::isNotBlank).mapToLong(Long::parseLong).toArray();
     }
 
     /**
@@ -62,10 +57,4 @@ public class SysUserOMView extends SysUser {
      */
     @TableField("post_names")
     private String postNames;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    public String[] getPostNames() {
-        if (StringUtils.isBlank(postNames)) return new String[0];
-        return Arrays.stream(postNames.split(",")).filter(StringUtils::isNotBlank).toArray(String[]::new);
-    }
 }

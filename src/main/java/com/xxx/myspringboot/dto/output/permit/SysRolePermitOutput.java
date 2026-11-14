@@ -12,6 +12,6 @@ public class SysRolePermitOutput {
     private Integer permitId;
     private String permitName;
     private String aliasName;
-    private Integer orderNo;
+    private Integer sort;
     private Boolean isChecked;
 }

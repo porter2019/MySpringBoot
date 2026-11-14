@@ -7,6 +7,7 @@ import com.xxx.myspringboot.service.impl.common.MQTTService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.util.BeanUtil;
 
@@ -31,7 +33,7 @@ public class MQTTController {
 
     @GetMapping("/publish")
     @Operation(summary = "发布消息")
-    public ApiResult publish(String topic, String payload) {
+    public ApiResult publish(@RequestParam @NotBlank String topic, @RequestParam @NotBlank String payload) {
         var mqttService = mqttServiceProvider.getIfAvailable();
         if (mqttService == null) {
             return ApiResult.error("MQTT服务未启用");

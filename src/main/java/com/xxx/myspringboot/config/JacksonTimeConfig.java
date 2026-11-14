@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * Jackson时间配置类
@@ -45,16 +46,34 @@ public class JacksonTimeConfig {
         }
     }
 
-    // ========== LocalDateTime 反序列化器 ==========
+    // ========== LocalDateTime 反序列化器（兼容纯日期 + 完整日期时间） ==========
     public static class LocalDateTimeDeserializer extends ValueDeserializer<LocalDateTime> {
         @Override
         public LocalDateTime deserialize(JsonParser p, DeserializationContext ctxt)
                 throws JacksonException {
             String text = p.getString();
-            if (text == null || text.isEmpty()) {
+            if (text == null || text.isBlank()) {
                 return null;
             }
-            return LocalDateTime.parse(text, DATE_TIME_FORMATTER);
+            text = text.trim();
+
+            // 1) 纯日期 "yyyy-MM-dd"（长度10）→ 补 00:00:00
+            if (text.length() == 10) {
+                return LocalDate.parse(text, DATE_FORMATTER).atStartOfDay();
+            }
+
+            // 2) ISO 格式 "yyyy-MM-dd'T'HH:mm:ss" / "yyyy-MM-dd'T'HH:mm:ss.SSS"
+            if (text.contains("T")) {
+                return LocalDateTime.parse(text, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }
+
+            // 3) 项目自定义格式 "yyyy-MM-dd HH:mm:ss"
+            try {
+                return LocalDateTime.parse(text, DATE_TIME_FORMATTER);
+            } catch (DateTimeParseException e) {
+                // 4) 兜底：再尝试一次 ISO（防止空格分隔以外的变体）
+                return LocalDateTime.parse(text, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            }
         }
     }
 
@@ -110,4 +129,3 @@ public class JacksonTimeConfig {
         }
     }
 }
-

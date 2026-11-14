@@ -1,7 +1,9 @@
 package com.xxx.myspringboot.controller.sys;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
@@ -10,7 +12,10 @@ import com.xxx.myspringboot.dto.AuditContext;
 import com.xxx.myspringboot.dto.AuditInfo;
 import com.xxx.myspringboot.dto.input.SysRole.SysRolePageInput;
 import com.xxx.myspringboot.dto.input.SysRole.SysRoleUpdatePermitInput;
+import com.xxx.myspringboot.entity.Contract;
+import com.xxx.myspringboot.entity.sys.SysPost;
 import com.xxx.myspringboot.entity.sys.SysRole;
+import com.xxx.myspringboot.service.common.ICommonFuncService;
 import com.xxx.myspringboot.service.sys.ISysPermitService;
 import com.xxx.myspringboot.service.sys.ISysRoleService;
 import com.xxx.myspringboot.util.MyStringUtil;
@@ -18,21 +23,25 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 /**
- * 用户组
+ * 角色
  */
 @RestController
 @RequestMapping("/sysRole")
-@Tag(name = "用户组")
+@Tag(name = "角色")
 @Validated
 @PermissionHandler(module = "系统管理", handler = "角色组", alias = "SysRole")
 public class SysRoleController {
@@ -44,12 +53,30 @@ public class SysRoleController {
     @Resource
     private ISysPermitService sysPermitService;
 
+    @Resource
+    private ICommonFuncService commonFuncService;
+
     @PostMapping("/get/pagelist")
     @Operation(summary = "获取分页列表")
     @PermissionAction(name = "查看", alias = "show")
-    public ApiResult GetPageList(@RequestBody SysRolePageInput req) {
+    public ApiResult GetPageList(@RequestBody @NotNull SysRolePageInput req) {
         var data = sysRoleService.getPageList(req);
         return ApiResult.success(data);
+    }
+
+    @PostMapping("/modify/sorts")
+    @Operation(summary = "批量修改排序")
+    @Transactional(rollbackFor = Exception.class)
+    public ApiResult ModifySorts(@RequestBody @NotEmpty ArrayList<Long> req) {
+        if (CollectionUtils.isEmpty(req)) {
+            return ApiResult.failed("数据不能为空");
+        }
+        for (int i = 0; i < req.size(); i++) {
+            var updateWrapper = new LambdaUpdateWrapper<SysRole>();
+            updateWrapper.eq(SysRole::getId, req.get(i)).set(SysRole::getSort, i + 1);
+            sysRoleService.update(updateWrapper);
+        }
+        return ApiResult.success("修改成功");
     }
 
     @GetMapping("/get/info")
@@ -65,7 +92,7 @@ public class SysRoleController {
     @PostMapping("add")
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
-    public ApiResult Add(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestBody SysRole entity) {
+    public ApiResult Add(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestBody @NotNull SysRole entity) {
         AuditContext.set(new AuditInfo(StpUtil.getSession().getString(CurrentConst.UserName), logPath, client));
         try {
             entity.setIsSuper(false);
@@ -79,16 +106,16 @@ public class SysRoleController {
     @GetMapping("check/name")
     @Operation(summary = "检查组名是否存在")
     public ApiResult CheckNameExists(@RequestParam @NotNull(message = "id 不能为空") Long id, @RequestParam @NotBlank(message = "name 不能为空") String name) {
-        var wrapper = new QueryWrapper<SysRole>();
-        wrapper.ne(id > 0, "id", id);
-        wrapper.eq("name", name);
+        var wrapper = new LambdaQueryWrapper<SysRole>();
+        wrapper.ne(id > 0, SysRole::getId, id);
+        wrapper.eq(SysRole::getName, name);
         return ApiResult.success(sysRoleService.exists(wrapper));
     }
 
     @PostMapping("edit")
     @Operation(summary = "修改")
     @PermissionAction(name = "修改", alias = "edit")
-    public ApiResult Edit(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestBody SysRole entity) {
+    public ApiResult Edit(@RequestHeader(value = CurrentConst.ClientTag, defaultValue = "") String client, @RequestBody @NotNull SysRole entity) {
         AuditContext.set(new AuditInfo(StpUtil.getSession().getString(CurrentConst.UserName), logPath, client));
         try {
             sysRoleService.updateById(entity);
@@ -108,6 +135,32 @@ public class SysRoleController {
         }
         sysRoleService.removeByIds(idList);
         return ApiResult.success("删除成功");
+    }
+
+    @GetMapping("/switch/status")
+    @Operation(summary = "修改状态")
+    public ApiResult ModifyStatus(@RequestParam @NotEmpty Long id) {
+        var model = sysRoleService.getById(id);
+        if (model == null) {
+            return ApiResult.failed("数据不存在");
+        }
+        var newStatus = !model.getStatus();
+        var newStatusText = newStatus ? "已启用" : "已禁用";
+        var updateWrapper = new LambdaUpdateWrapper<SysRole>();
+        updateWrapper.eq(SysRole::getId, id).set(SysRole::getStatus, newStatus);
+        sysRoleService.update(updateWrapper);
+        return ApiResult.success(newStatusText);
+    }
+
+    @GetMapping("/auto/search/name")
+    @Operation(summary = "自动搜索")
+    public ApiResult AutoSearch(@RequestParam String keyword) {
+        var wrapper = new LambdaQueryWrapper<SysRole>();
+        wrapper.like(StringUtils.isNotBlank(keyword), SysRole::getName, keyword);
+        wrapper.select(SysRole::getId, SysRole::getName);
+        wrapper.last("limit 10");
+        var result = commonFuncService.autoSearchField(sysRoleService, wrapper, SysRole::getId, SysRole::getName);
+        return ApiResult.success(result);
     }
 
     @GetMapping("get/permit/list")

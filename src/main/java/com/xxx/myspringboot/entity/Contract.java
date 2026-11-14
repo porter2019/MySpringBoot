@@ -1,7 +1,12 @@
 package com.xxx.myspringboot.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.xxx.myspringboot.dto.CommonAttach;
 import com.xxx.myspringboot.entity.base.BaseEntityStandard;
 import com.xxx.myspringboot.entity.enums.ContractFlagEnum;
 import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
@@ -20,6 +25,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@TableName(autoResultMap = true)
 public class Contract extends BaseEntityStandard {
 
     private static final long serialVersionUID = 1L;
@@ -27,6 +33,7 @@ public class Contract extends BaseEntityStandard {
     /**
      * 合同编号
      */
+    @TableField(updateStrategy = FieldStrategy.NEVER)
     private String code;
 
     /**
@@ -91,6 +98,12 @@ public class Contract extends BaseEntityStandard {
     }
 
     /**
+     * 附件列表
+     */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    public List<CommonAttach> attachList = new ArrayList<>();
+
+    /**
      * 明细列表
      */
     @TableField(exist = false)
@@ -112,6 +125,7 @@ public class Contract extends BaseEntityStandard {
   region_full       varchar(200)                   null comment '省市区',
   region_address    varchar(200)                   null comment '详细地址',
   flag              int              default 0 not null comment '审批状态',
+  `attachList`      JSON             default null       comment '附件列表',
   `status`          tinyint(1)       default 1 not null comment '状态',
   remark            varchar(200)                   null comment '备注',
   created_user_id   bigint                         null comment '创建者用户Id',

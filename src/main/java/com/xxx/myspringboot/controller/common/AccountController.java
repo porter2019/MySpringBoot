@@ -22,6 +22,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -58,6 +59,7 @@ public class AccountController {
     @PostMapping("login")
     @Operation(summary = "登录")
     public ApiResult Login(HttpServletRequest request, @RequestBody @Valid LoginInput req, HttpServletResponse response) {
+        var ip = ServletUtil.getClientIp(request);
         var pwd = SecureUtil.md5(req.getPassword());
         var wrapper = new LambdaQueryWrapper<SysUser>();
         wrapper.eq(SysUser::getCellPhone, req.getCellPhone());
@@ -71,7 +73,9 @@ public class AccountController {
         }
 
         var updateWrapper = new LambdaUpdateWrapper<SysUser>();
-        updateWrapper.eq(SysUser::getId, userEntity.getId()).set(SysUser::getLastLoginTime, LocalDateTime.now());
+        updateWrapper.eq(SysUser::getId, userEntity.getId())
+                .set(SysUser::getLastLoginIp, ip)
+                .set(SysUser::getLastLoginTime, LocalDateTime.now());
         sysUserService.update(updateWrapper);
         //添加到登录日志
         var userAgent = request.getHeader("User-Agent");
@@ -80,7 +84,7 @@ public class AccountController {
         logEntity.setUserName(userEntity.getUserName());
         logEntity.setCellPhone(userEntity.getCellPhone());
         logEntity.setUserAgent(userAgent);
-        logEntity.setIp(ServletUtil.getClientIp(request));
+        logEntity.setIp(ip);
         logLoginService.save(logEntity);
 
         StpUtil.login(userEntity.getId());
@@ -100,6 +104,13 @@ public class AccountController {
         //);
 
         return ApiResult.success(tokenInfo.tokenValue);
+    }
+
+    @SaIgnore
+    @GetMapping("check/exists/cellphone")
+    @Operation(summary = "验证手机号是否被注册")
+    public ApiResult CheckCallPhoneAny(@RequestParam @NotBlank String cellPhone) {
+        return ApiResult.success(sysUserService.count(new LambdaQueryWrapper<SysUser>().eq(SysUser::getCellPhone, cellPhone)) > 0);
     }
 
     @SaIgnore

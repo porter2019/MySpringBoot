@@ -8,7 +8,7 @@ import com.xxx.myspringboot.entity.sys.SysDirectoryItemFullView;
 /**
  * 字典完整信息 服务类
  */
-public interface SysDirectoryItemFullViewService extends IService<SysDirectoryItemFullView> {
+public interface ISysDirectoryItemFullViewService extends IService<SysDirectoryItemFullView> {
 
     /**
      * 获取分页列表

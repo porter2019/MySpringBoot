@@ -13,8 +13,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import java.nio.file.Paths;
 
@@ -26,6 +28,17 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     @Value("${app.web-root-path}")
     private String webRootPath;
+
+    /**
+     * 控制器路径匹配规则
+     */
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        PathPatternParser parser = new PathPatternParser();
+        // 关闭URL地址大小写敏感
+        parser.setCaseSensitive(false);
+        configurer.setPatternParser(parser);
+    }
 
     /**
      * 静态资源映射

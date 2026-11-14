@@ -2,6 +2,7 @@ package com.xxx.myspringboot.service.sys;
 
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.xxx.myspringboot.entity.sys.SysDirectoryCategory;
+import com.xxx.myspringboot.util.EnumOptionUtil;
 
 import java.util.List;
 
@@ -49,4 +50,12 @@ public interface ISysDirectoryCategoryService extends IService<SysDirectoryCateg
      * @return 返回删除操作的结果
      */
     Integer delete(Long id);
+
+    /**
+     * 构建枚举列表
+     *
+     * @param codes 枚举代码数组
+     * @return 枚举列表
+     */
+    List<EnumOptionUtil.EnumGroupVO> buildEnumList(String... codes);
 }

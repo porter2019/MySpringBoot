@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Component
 @Slf4j
-public class SaTokenStpService implements StpInterface {
+public class SaTokenStpServiceImpl implements StpInterface {
 
     @Resource
     private ISysPermitService sysPermitService;

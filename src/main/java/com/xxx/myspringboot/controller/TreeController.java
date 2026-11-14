@@ -9,6 +9,7 @@ import com.xxx.myspringboot.service.ITreeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
@@ -46,15 +47,14 @@ public class TreeController {
 
     @GetMapping("get/next/orderno")
     @Operation(summary = "生成排序号")
-    public ApiResult GetNextOrderNo(Long pid) {
-        var orderno = treeService.getNextOrderNo(pid);
-        return ApiResult.success(orderno);
+    public ApiResult GetNextOrderNo(@RequestParam @NotNull Long pid) {
+        return ApiResult.success(treeService.getNextOrderNo(pid));
     }
 
     @PostMapping("add")
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
-    public ApiResult Add(@RequestBody TreeModifyInput req) {
+    public ApiResult Add(@RequestBody @NotNull TreeModifyInput req) {
         var entity = new Tree();
         BeanUtils.copyProperties(req, entity);
         treeService.add(entity);
@@ -64,7 +64,7 @@ public class TreeController {
     @PostMapping("edit")
     @Operation(summary = "修改")
     @PermissionAction(name = "修改", alias = "edit")
-    public ApiResult Edit(@RequestBody TreeModifyInput req) {
+    public ApiResult Edit(@RequestBody @NotNull TreeModifyInput req) {
         var entity = new Tree();
         BeanUtils.copyProperties(req, entity);
         treeService.edit(entity);

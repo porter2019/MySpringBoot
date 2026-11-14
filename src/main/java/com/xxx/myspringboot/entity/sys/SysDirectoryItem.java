@@ -32,6 +32,11 @@ public class SysDirectoryItem extends BaseEntityStandard {
      */
     private String value;
 
+    /**
+     * 排序数字
+     */
+    private Integer sort;
+
     /*
     create table sys_directory_item
 (
@@ -40,6 +45,7 @@ public class SysDirectoryItem extends BaseEntityStandard {
   name              varchar(30)                    null comment '名称',
   value              varchar(30)                    null comment '值',
   `status`          tinyint(1)       default 1 not null comment '状态',
+  `sort`            INT               not null DEFAULT '0'  COMMENT '排序数字',
   remark            varchar(200)                   null comment '备注',
   created_user_id   bigint                         null comment '创建者用户Id',
   created_user_name varchar(30)                    null comment '创建者用户名',

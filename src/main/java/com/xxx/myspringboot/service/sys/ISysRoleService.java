@@ -7,6 +7,7 @@ import com.xxx.myspringboot.entity.sys.SysRole;
 import com.baomidou.mybatisplus.spring.service.IService;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 用户组 服务类
@@ -20,6 +21,14 @@ public interface ISysRoleService extends IService<SysRole> {
      * @return 分页对象
      */
     PageResult<SysRole> getPageList(SysRolePageInput input);
+
+    /**
+     * 批量删除
+     *
+     * @param idList id列表
+     * @return 是否成功
+     */
+    Boolean delete(Set<Long> idList);
 
     /**
      * 获取某角色下所有权限及其勾选状态

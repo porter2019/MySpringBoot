@@ -18,6 +18,13 @@ public interface IContractService extends IService<Contract> {
     PageResult<Contract> getPageList(ContractPageInput input);
 
     /**
+     * 生成下一个编号
+     *
+     * @param prefix 编号前缀 HT
+     */
+    String generateNextCode(String prefix);
+
+    /**
      * 添加
      *
      * @param entity 包含合同信息的实体对象

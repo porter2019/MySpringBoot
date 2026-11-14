@@ -8,19 +8,26 @@ import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.common.CurrentConst;
 import com.xxx.myspringboot.dto.input.SysUser.SysUserChangeAvatarInput;
 import com.xxx.myspringboot.dto.input.SysUser.SysUserChangePwdInput;
+import com.xxx.myspringboot.entity.sys.SysOrg;
 import com.xxx.myspringboot.entity.sys.SysUser;
+import com.xxx.myspringboot.service.sys.ISysOrgService;
+import com.xxx.myspringboot.service.sys.ISysPermitService;
+import com.xxx.myspringboot.service.sys.ISysRoleUserService;
 import com.xxx.myspringboot.service.sys.ISysUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,6 +42,12 @@ public class CurrentController {
 
     @Resource
     private ISysUserService sysUserService;
+
+    @Resource
+    private ISysPermitService sysPermitService;
+
+    @Resource
+    private ISysOrgService sysOrgService;
 
     @Resource
     private Environment env;
@@ -67,37 +80,37 @@ public class CurrentController {
         return ApiResult.success(result);
     }
 
+    @GetMapping("get/permission/list")
+    @Operation(summary = "获取用户权限信息")
+    public ApiResult GetPermissionList() {
+        Boolean isAdmin = (Boolean) StpUtil.getSession().get(CurrentConst.Is_Super_Admin);
+        if (isAdmin) {
+            return ApiResult.success(List.of("ALL"));
+        } else {
+            var permitList = sysPermitService.getPermissionCodesByUserId(StpUtil.getLoginIdAsLong());
+            return ApiResult.success(permitList);
+        }
+    }
+
     @GetMapping("modify/username")
     @Operation(summary = "修改用户名")
-    public ApiResult ChangeUserName(@RequestParam String userName) {
-        if(StringUtils.isBlank(userName)){
+    public ApiResult ChangeUserName(@RequestParam @NotBlank String userName) {
+        if (StringUtils.isBlank(userName)) {
             return ApiResult.failed("名称不能为空");
         }
-        var userInfo = sysUserService.getById(StpUtil.getLoginIdAsLong());
-        if (userInfo == null) {
-            return ApiResult.failed("用户不存在");
+        var isOK = sysUserService.modifyUserName(StpUtil.getLoginIdAsLong(), userName);
+        if (isOK) {
+            // 更新上下文中的用户名
+            StpUtil.getSession().set(CurrentConst.UserName, userName);
+            return ApiResult.success("修改成功");
+        } else {
+            return ApiResult.failed("修改失败");
         }
-        if (!userInfo.getStatus()) {
-            return ApiResult.failed("用户已被禁用");
-        }
-        //指定更新
-        var updateWrapper = new LambdaUpdateWrapper<SysUser>();
-        updateWrapper.eq(SysUser::getId, userInfo.getId())
-                .set(SysUser::getUserName, userName)
-                .set(SysUser::getUpdatedUserId, userInfo.getId())
-                .set(SysUser::getUpdatedUserName, userInfo.getUserName())
-                .set(SysUser::getUpdatedTime, LocalDateTime.now());
-        sysUserService.update(updateWrapper);
-
-        // 更新上下文中的用户名
-        StpUtil.getSession().set(CurrentConst.UserName, userName);
-
-        return ApiResult.success("修改成功");
     }
 
     @PostMapping("modify/avatar")
     @Operation(summary = "修改头像")
-    public  ApiResult ChangeAvatar(@RequestBody @Valid SysUserChangeAvatarInput req) {
+    public ApiResult ChangeAvatar(@RequestBody @Valid SysUserChangeAvatarInput req) {
         var userInfo = sysUserService.getById(StpUtil.getLoginIdAsLong());
         if (userInfo == null) {
             return ApiResult.failed("用户不存在");
@@ -119,7 +132,7 @@ public class CurrentController {
 
     @PostMapping("modify/password")
     @Operation(summary = "修改密码")
-    public ApiResult ChangePassword(@Valid @RequestBody SysUserChangePwdInput req) {
+    public ApiResult ChangePassword(@RequestBody @Valid SysUserChangePwdInput req) {
         var userInfo = sysUserService.getById(StpUtil.getLoginIdAsLong());
         if (userInfo == null) {
             return ApiResult.failed("用户不存在");

@@ -23,4 +23,9 @@ public class BasePageQueryModel implements Serializable {
     @NotNull
     private PageOptions pageInfo;
 
+    /**
+     * 创建时间
+     */
+    private String createdTime;
+
 }

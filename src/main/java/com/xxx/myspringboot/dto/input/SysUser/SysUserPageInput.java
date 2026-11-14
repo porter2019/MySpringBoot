@@ -10,8 +10,19 @@ import java.io.Serializable;
 @Getter
 @Setter
 @ToString
-public class SysUserPageInput extends BasePageQueryModel implements Serializable {
+public class SysUserPageInput extends BasePageQueryModel {
+
     private static final long serialVersionUID = 1L;
 
+    private Long orgId;
+
     private String cellPhone;
+
+    private String orgName;
+
+    private String roleNames;
+
+    private String postNames;
+
+    private String userName;
 }

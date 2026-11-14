@@ -65,6 +65,9 @@ knife4j:
   setting:
     language: zh_cn
 
+pdfService:
+  host: http://localhost:5924
+
 mybatis-plus:
   mapper-locations: classpath*:/**/mapper/xml/*.xml
   configuration:

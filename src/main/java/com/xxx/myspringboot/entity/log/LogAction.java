@@ -89,7 +89,7 @@ public class LogAction implements Serializable {
   operator     varchar(30)                    null comment '操作人',
   class_name   varchar(200)                   null comment '实体包名',
   `local`      varchar(200)                   null comment '位置',
-  content      mediumint                      null comment '操作内容',
+  content      MEDIUMTEXT                     null comment '操作内容',
   created_time datetime     default now() not null comment '创建时间',
   primary key (id)
 ) comment '操作日志';

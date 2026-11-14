@@ -8,7 +8,7 @@
                sp.id                                             AS permitId,
                sp.permit_name                                    AS permitName,
                sp.alias_name                                     AS aliasName,
-               sh.order_no                                       AS orderNo,
+               sh.sort                                           AS sort,
                CASE WHEN srp.permit_id IS NULL THEN 0 ELSE 1 END AS isChecked
         FROM sys_permit sp
                  INNER JOIN sys_handler sh ON sp.handler_id = sh.id AND sh.is_deleted = 0

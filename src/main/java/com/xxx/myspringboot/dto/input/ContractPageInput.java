@@ -22,4 +22,6 @@ public class ContractPageInput extends BasePageQueryModel implements Serializabl
 
     private Integer flag;
 
+    private String flagIn;
+
 }

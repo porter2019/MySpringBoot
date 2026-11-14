@@ -1,6 +1,7 @@
 package com.xxx.myspringboot.controller.sys;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +50,7 @@ public class SysUserController {
     @PostMapping("/get/pagelist")
     @Operation(summary = "获取分页列表")
     @PermissionAction(name = "查看", alias = "show")
-    public ApiResult GetPageList(@RequestBody SysUserPageInput req) {
+    public ApiResult GetPageList(@RequestBody @NotNull SysUserPageInput req) {
         var data = sysUserOMViewService.getPageList(req);
         data.getItems().forEach(item -> item.setPassword(PublicConst.Display_User_Password));
         return ApiResult.success(data);
@@ -69,25 +71,25 @@ public class SysUserController {
     @PostMapping("add")
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
-    public ApiResult Add(@RequestBody SysUserOMView entity) {
-        var id = sysUserService.Add(entity);
+    public ApiResult Add(@RequestBody @NotNull SysUserOMView entity) {
+        var id = sysUserService.add(entity);
         return ApiResult.success(id > 0 ? "添加成功" : "添加失败");
     }
 
     @GetMapping("check/cellphone")
     @Operation(summary = "检查手机号是否存在")
     public ApiResult CheckCelPhoneExists(@RequestParam @NotNull(message = "id 不能为空") Long id, @RequestParam @NotBlank(message = "name 不能为空") String cellPhone) {
-        var wrapper = new QueryWrapper<SysUser>();
-        wrapper.ne(id > 0, "id", id);
-        wrapper.eq("cell_phone", cellPhone); //数据库中的字段名
+        var wrapper = new LambdaQueryWrapper<SysUser>();
+        wrapper.ne(id > 0, SysUser::getId, id);
+        wrapper.eq(SysUser::getCellPhone, cellPhone);
         return ApiResult.success(sysUserService.exists(wrapper));
     }
 
     @PostMapping("edit")
     @Operation(summary = "修改")
     @PermissionAction(name = "修改", alias = "edit")
-    public ApiResult Edit(@RequestBody SysUserOMView entity) {
-        sysUserService.Edit(entity);
+    public ApiResult Edit(@RequestBody @NotNull SysUserOMView entity) {
+        sysUserService.edit(entity);
         return ApiResult.success("修改成功");
     }
 
@@ -100,7 +102,7 @@ public class SysUserController {
             return ApiResult.failed("ids 无效");
         }
 
-        var isOK = sysUserService.Delete(idList);
+        var isOK = sysUserService.delete(idList);
         return ApiResult.success(isOK ? "删除成功" : "删除失败");
     }
 
@@ -170,4 +172,22 @@ public class SysUserController {
         var userIdList = sysPermitService.getUserIdByPermission(handlerName, actionName);
         return ApiResult.success(userIdList);
     }
+
+
+    //region 部门权限
+
+    @PermissionAction(name = "部门-添加", alias = "org-add")
+    public void AAA() {
+    }
+
+    @PermissionAction(name = "部门-修改", alias = "org-edit")
+    public void BBB() {
+    }
+
+    @PermissionAction(name = "部门-删除", alias = "org-delete")
+    public void CCC() {
+    }
+
+    //endregion
+
 }

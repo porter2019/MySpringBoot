@@ -1,22 +1,23 @@
 package com.xxx.myspringboot.service.impl.sys;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.xxx.myspringboot.common.CurrentConst;
 import com.xxx.myspringboot.common.PublicConst;
-import com.xxx.myspringboot.entity.sys.SysPostUser;
-import com.xxx.myspringboot.entity.sys.SysRoleUser;
-import com.xxx.myspringboot.entity.sys.SysUser;
-import com.xxx.myspringboot.entity.sys.SysUserOMView;
+import com.xxx.myspringboot.entity.sys.*;
+import com.xxx.myspringboot.mapper.sys.SysOrgMapper;
 import com.xxx.myspringboot.mapper.sys.SysUserMapper;
 import com.xxx.myspringboot.service.sys.ISysPostUserService;
 import com.xxx.myspringboot.service.sys.ISysRoleUserService;
 import com.xxx.myspringboot.service.sys.ISysUserService;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
-import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,17 +26,16 @@ import java.util.Set;
  * 系统用户 服务实现类
  */
 @Service
+@RequiredArgsConstructor
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements ISysUserService {
 
-    @Resource
-    private ISysRoleUserService sysRoleUserService;
-
-    @Resource
-    private ISysPostUserService sysPostUserService;
+    private final ISysRoleUserService sysRoleUserService;
+    private final ISysPostUserService sysPostUserService;
+    private final SysOrgMapper sysOrgMapper;
 
     // 添加用户及所属的角色和岗位
     @Transactional(rollbackFor = Exception.class)
-    public long Add(SysUserOMView entity) {
+    public long add(SysUserOMView entity) {
         entity.setIsSuper(false);
         entity.setIsOM(false);
         entity.setIsMP(true);
@@ -68,7 +68,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     // 修改用户及所属的用户组
     @Transactional(rollbackFor = Exception.class)
-    public boolean Edit(SysUserOMView entity) {
+    public boolean edit(SysUserOMView entity) {
         var oldEntity = getById(entity.getId());
         if (!entity.getPassword().equals(PublicConst.Display_User_Password)) {
             //修改了密码
@@ -107,12 +107,44 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         sysPostUserService.saveBatch(userPostList);
 
+        //部门中的领导，冗余存储的
+        var updateOrgWrapper = new LambdaUpdateWrapper<SysOrg>();
+        updateOrgWrapper.eq(SysOrg::getLeaderId, entity.getId()).set(SysOrg::getLeaderName, entity.getUserName());
+        sysOrgMapper.update(updateOrgWrapper);
+
+        return true;
+    }
+
+    // 修改用户名
+    @Transactional(rollbackFor = Exception.class)
+    public boolean modifyUserName(Long userId, String userName) {
+        var model = getById(userId);
+        if (model == null) {
+            return false;
+        }
+        if (!model.getStatus()) {
+            return false;
+        }
+
+        var updateWrapper = new LambdaUpdateWrapper<SysUser>();
+        updateWrapper.eq(SysUser::getId, userId)
+                .set(SysUser::getUserName, userName)
+                .set(SysUser::getUpdatedUserId, StpUtil.getLoginIdAsLong())
+                .set(SysUser::getUpdatedUserName, StpUtil.getSession().get(CurrentConst.UserName).toString())
+                .set(SysUser::getUpdatedTime, LocalDateTime.now());
+        update(updateWrapper);
+
+        //部门中的领导，冗余存储的
+        var updateOrgWrapper = new LambdaUpdateWrapper<SysOrg>();
+        updateOrgWrapper.eq(SysOrg::getLeaderId, userId).set(SysOrg::getLeaderName, userName);
+        sysOrgMapper.update(updateOrgWrapper);
+
         return true;
     }
 
     // 删除
     @Transactional
-    public boolean Delete(Set<Long> idList) {
+    public boolean delete(Set<Long> idList) {
         if (idList.isEmpty()) {
             return false;
         }
@@ -136,6 +168,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         var userDeleteWrapper = new LambdaQueryWrapper<SysUser>();
         userDeleteWrapper.in(SysUser::getId, idList);
         remove(userDeleteWrapper);
+
+        //部门中的领导，冗余存储的
+        var updateOrgWrapper = new LambdaUpdateWrapper<SysOrg>();
+        updateOrgWrapper.in(SysOrg::getLeaderId, idList).set(SysOrg::getLeaderId, 0).set(SysOrg::getLeaderName, null);
+        sysOrgMapper.update(updateOrgWrapper);
 
         return isUpdate;
     }

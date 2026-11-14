@@ -12,6 +12,9 @@ import com.xxx.myspringboot.entity.enums.ContractFlagEnum;
 import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
 import com.xxx.myspringboot.service.IContractItemService;
 import com.xxx.myspringboot.service.IContractService;
+import com.xxx.myspringboot.service.common.ICommonFuncService;
+import com.xxx.myspringboot.service.common.IPDFService;
+import com.xxx.myspringboot.service.sys.ISysDirectoryCategoryService;
 import com.xxx.myspringboot.util.EnumOptionUtil;
 import com.xxx.myspringboot.util.MyStringUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +29,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -45,12 +52,26 @@ public class ContractController {
     @Resource
     private IContractItemService contractItemService;
 
+    @Resource
+    private ISysDirectoryCategoryService sysDirectoryCategoryService;
+
+    @Resource
+    private IPDFService pdfService;
+
     @PostMapping("/get/pagelist")
     @Operation(summary = "获取分页列表")
     @PermissionAction(name = "查看", alias = "show")
-    public ApiResult GetPageList(@RequestBody ContractPageInput req) {
+    public ApiResult GetPageList(@RequestBody @NotNull ContractPageInput req) {
         var data = contractService.getPageList(req);
-        return ApiResult.success(data).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractFlagEnum.class), List.of("CType", "Flag")));
+        pdfService.excelToPdf("/uploads/export/111.xlsx","/uploads/export/111.pdf");
+        return ApiResult.success(data).withEnums(buildEnums());
+    }
+
+    List<EnumOptionUtil.EnumGroupVO> buildEnums() {
+        var enumList1 = EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractFlagEnum.class), List.of("CType", "Flag"));
+        var enumList2 = sysDirectoryCategoryService.buildEnumList("CarType", "Gender", "AAA");
+        enumList1.addAll(enumList2);
+        return enumList1;
     }
 
     @GetMapping("/get/info")
@@ -62,13 +83,13 @@ public class ContractController {
         } else {
             entity.setItemList(contractItemService.list(new LambdaQueryWrapper<ContractItem>().eq(ContractItem::getContractId, id).orderByAsc(ContractItem::getSort)));
         }
-        return ApiResult.success(entity).withEnums(EnumOptionUtil.buildEnumList(List.of(ContractTypeEnum.class, ContractFlagEnum.class), List.of("CType", "Flag")));
+        return ApiResult.success(entity).withEnums(buildEnums());
     }
 
     @PostMapping("add")
     @Operation(summary = "添加")
     @PermissionAction(name = "添加", alias = "add")
-    public ApiResult Add(@RequestBody Contract entity) {
+    public ApiResult Add(@RequestBody @NotNull Contract entity) {
         for (int i = 0; i < entity.getItemList().size(); i++) {
             entity.getItemList().get(i).setSort(i + 1);
         }
@@ -79,7 +100,7 @@ public class ContractController {
     @PostMapping("edit")
     @Operation(summary = "修改")
     @PermissionAction(name = "修改", alias = "edit")
-    public ApiResult Edit(@RequestBody Contract entity) {
+    public ApiResult Edit(@RequestBody @NotNull Contract entity) {
         for (int i = 0; i < entity.getItemList().size(); i++) {
             entity.getItemList().get(i).setSort(i + 1);
         }
@@ -101,10 +122,10 @@ public class ContractController {
         return ApiResult.success("删除成功");
     }
 
-    @PostMapping("/modify/sort")
-    @Operation(summary = "修改排序")
+    @PostMapping("/modify/sorts")
+    @Operation(summary = "批量修改排序")
     @Transactional(rollbackFor = Exception.class)
-    public ApiResult ModifySort(@RequestBody @NotEmpty List<ContractItem> req) {
+    public ApiResult ModifySorts(@RequestBody @NotEmpty List<ContractItem> req) {
         if (CollectionUtils.isEmpty(req)) {
             return ApiResult.failed("数据不能为空");
         }
@@ -118,7 +139,7 @@ public class ContractController {
 
     @GetMapping("/modify/flag")
     @Operation(summary = "修改状态")
-    public ApiResult ModifyFlag(@RequestParam @NotEmpty Long id, @NotEmpty Integer newFlag) {
+    public ApiResult ModifyFlag(@RequestParam @NotNull Long id, @NotNull Integer newFlag) {
         ContractFlagEnum flag = ContractFlagEnum.of(newFlag);
         LambdaUpdateWrapper<Contract> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(Contract::getId, id).set(Contract::getFlag, flag);
@@ -128,14 +149,14 @@ public class ContractController {
 
     @GetMapping("/switch/status")
     @Operation(summary = "修改状态")
-    public ApiResult ModifyStatus(@RequestParam @NotEmpty Long id) {
+    public ApiResult ModifyStatus(@RequestParam @NotNull Long id) {
         var model = contractService.getById(id);
         if (model == null) {
             return ApiResult.failed("数据不存在");
         }
         var newStatus = !model.getStatus();
         var newStatusText = newStatus ? "已启用" : "已禁用";
-        LambdaUpdateWrapper<Contract> updateWrapper = new LambdaUpdateWrapper<>();
+        var updateWrapper = new LambdaUpdateWrapper<Contract>();
         updateWrapper.eq(Contract::getId, id).set(Contract::getStatus, newStatus);
         contractService.update(updateWrapper);
         return ApiResult.success(newStatusText);

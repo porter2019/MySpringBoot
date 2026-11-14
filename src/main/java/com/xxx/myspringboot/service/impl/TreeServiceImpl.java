@@ -20,10 +20,7 @@ import java.util.stream.Collectors;
  * 树形数据 服务实现类
  */
 @Service
-@RequiredArgsConstructor
 public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements ITreeService {
-
-    private final TreeMapper treeMapper;
 
 
     /**
@@ -33,7 +30,7 @@ public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements IT
      * @return 返回构建好的树形结构列表
      */
     public List<Tree> getTreeList(String searchText) {
-        var allData = treeMapper.selectList(null);
+        var allData = baseMapper.selectList(null);
         if (StringUtils.isBlank(searchText)) {
             //没有搜索条件，构造所有
             return TreeUtil.buildTree(allData,
@@ -46,7 +43,7 @@ public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements IT
             //搜索的节点会缺少父数据，传入所有数据重新构造完整树
             var queryWrapper = new LambdaQueryWrapper<Tree>();
             queryWrapper.like(Tree::getName, searchText);
-            var matchedData = treeMapper.selectList(queryWrapper);
+            var matchedData = baseMapper.selectList(queryWrapper);
             Set<Long> matchedIds = matchedData.stream().map(Tree::getId).collect(Collectors.toSet());
             return TreeUtil.buildTreeWithCondition(
                     allData,
@@ -67,15 +64,15 @@ public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements IT
      */
     public String getNextOrderNo(Long parentId) {
         int length = 3;
-        var parentModel = treeMapper.selectById(parentId);
+        var parentModel = baseMapper.selectById(parentId);
         var parentNo = parentModel == null ? "" : parentModel.getOrderNo();
 
         var queryMaxWrapper = new LambdaQueryWrapper<Tree>();
         queryMaxWrapper.eq(Tree::getParentId, parentId);
         //取一条
         queryMaxWrapper.last("limit 1");
-        queryMaxWrapper.orderBy(true, false, Tree::getOrderNo);
-        var nowMaxModel = treeMapper.selectOne(queryMaxWrapper);
+        queryMaxWrapper.orderByDesc(Tree::getOrderNo);
+        var nowMaxModel = baseMapper.selectOne(queryMaxWrapper);
         String lastOrderNo = "001";
         if (nowMaxModel != null) {
             int num = NumberUtils.toInt(nowMaxModel.getOrderNo(), 0) + 1;
@@ -96,9 +93,9 @@ public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements IT
      * @return 返回插入操作的结果
      */
     public Integer add(Tree tree) {
-        var result = treeMapper.insert(tree); // 将树节点插入数据库
+        var result = baseMapper.insert(tree); // 将树节点插入数据库
         //执行存储过程以更新树节点的层级信息
-        treeMapper.callUpdateLayer();
+        baseMapper.callUpdateLayer();
         return result;
     }
 
@@ -109,9 +106,9 @@ public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements IT
      * @return 返回插入操作的结果
      */
     public Integer edit(Tree tree) {
-        var result = treeMapper.updateById(tree);
+        var result = baseMapper.updateById(tree);
         //执行存储过程以更新树节点的层级信息
-        treeMapper.callUpdateLayer();
+        baseMapper.callUpdateLayer();
         return result;
     }
 
@@ -122,7 +119,7 @@ public class TreeServiceImpl extends ServiceImpl<TreeMapper, Tree> implements IT
      * @return 返回删除操作的结果
      */
     public Integer delete(Long id) {
-        return treeMapper.deleteWithChildren(id);
+        return baseMapper.deleteWithChildren(id);
     }
 
 }

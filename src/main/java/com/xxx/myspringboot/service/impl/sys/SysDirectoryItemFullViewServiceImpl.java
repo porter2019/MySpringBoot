@@ -5,9 +5,8 @@ import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.common.PageResult;
 import com.xxx.myspringboot.dto.input.SysDirectory.SysDirectoryItemFullViewPageInput;
 import com.xxx.myspringboot.entity.sys.SysDirectoryItemFullView;
-import com.xxx.myspringboot.entity.sys.SysPost;
 import com.xxx.myspringboot.mapper.sys.SysDirectoryItemFullViewMapper;
-import com.xxx.myspringboot.service.sys.SysDirectoryItemFullViewService;
+import com.xxx.myspringboot.service.sys.ISysDirectoryItemFullViewService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
  * 字典项完整信息 服务实现类
  */
 @Service
-public class SysDirectoryItemFullViewServiceImpl extends ServiceImpl<SysDirectoryItemFullViewMapper, SysDirectoryItemFullView> implements SysDirectoryItemFullViewService {
+public class SysDirectoryItemFullViewServiceImpl extends ServiceImpl<SysDirectoryItemFullViewMapper, SysDirectoryItemFullView> implements ISysDirectoryItemFullViewService {
 
     /**
      * 获取分页列表

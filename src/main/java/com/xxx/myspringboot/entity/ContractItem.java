@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @ToString
-@TableName("c")
+@TableName("contract_item")
 public class ContractItem extends BaseEntity {
 
     private static final long serialVersionUID = 1L;

@@ -1,6 +1,7 @@
 package com.xxx.myspringboot.util;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -10,6 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
+import java.util.Collections;
+import java.util.UUID;
+
 /**
  * Redis 帮助类
  */
@@ -17,6 +23,15 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
 
     private final RedisTemplate<String, Object> redisTemplate;
+
+    // 类内常量
+    private static final String UNLOCK_LUA =
+            "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+                    "  return redis.call('del', KEYS[1]) " +
+                    "else return 0 end";
+
+    private static final RedisScript<Long> UNLOCK_SCRIPT =
+            new DefaultRedisScript<>(UNLOCK_LUA, Long.class);
 
     public RedisUtil(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
@@ -182,5 +197,110 @@ public class RedisUtil {
     public long sRemove(String key, Object... values) {
         Long count = redisTemplate.opsForSet().remove(key, values);
         return count == null ? 0 : count;
+    }
+
+    // ==================== 原子操作（并发控制必需）====================
+
+    /**
+     * 原子自增，返回自增后的值。
+     * key 不存在时从 0 开始，自增后为 1。
+     */
+    public long increment(String key) {
+        Long v = redisTemplate.opsForValue().increment(key);
+        return v == null ? 0L : v;
+    }
+
+    public long increment(String key, long delta) {
+        Long v = redisTemplate.opsForValue().increment(key, delta);
+        return v == null ? 0L : v;
+    }
+
+    /**
+     * 仅当 key 不存在时设置，返回是否设置成功（SETNX / SET IF ABSENT）。
+     * 用于初始化序号、实现简单分布式锁。
+     */
+    public boolean setIfAbsent(String key, Object value) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value));
+    }
+
+    /**
+     * SETNX + 过期时间（原子），避免设置 key 后进程崩溃导致永不过期。
+     */
+    public boolean setIfAbsent(String key, Object value, Duration timeout) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value, timeout));
+    }
+
+    /**
+     * 仅当 key 存在时才设置 value，返回是否成功。
+     * 常用于"锁续期/比对后更新"。
+     */
+    public boolean setIfPresent(String key, Object value) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfPresent(key, value));
+    }
+
+    /**
+     * 执行 Lua 脚本（保证多步操作原子性）。
+     * 分布式锁释放、复杂序号逻辑都靠它。
+     */
+    public <T> T execute(RedisScript<T> script, List<String> keys, Object... args) {
+        return redisTemplate.execute(script, keys, args);
+    }
+
+    // ==================== 分布式锁 ====================
+
+    /**
+     * 尝试加锁（不等待）。
+     *
+     * @param key 锁 key
+     * @param ttl 锁自动过期时间（防死锁，务必设置）
+     * @return 成功返回 token（解锁凭证），失败返回 null
+     */
+    public String tryLock(String key, Duration ttl) {
+        String token = UUID.randomUUID().toString();
+        Boolean ok = redisTemplate.opsForValue().setIfAbsent(key, token, ttl);
+        return Boolean.TRUE.equals(ok) ? token : null;
+    }
+
+    /**
+     * 自旋等待加锁。
+     *
+     * @param key         锁 key
+     * @param ttl         锁自动过期时间
+     * @param waitTimeout 最长等待时间
+     * @return token
+     * @throws IllegalStateException 等待超时
+     */
+    public String lock(String key, Duration ttl, Duration waitTimeout) {
+        long deadline = System.currentTimeMillis() + waitTimeout.toMillis();
+        while (System.currentTimeMillis() < deadline) {
+            String token = tryLock(key, ttl);
+            if (token != null) {
+                return token;
+            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("等待锁被中断", e);
+            }
+        }
+        throw new IllegalStateException("获取锁超时: " + key);
+    }
+
+    /**
+     * 释放锁：Lua 保证"比对 token 再删除"原子执行，
+     * 避免锁过期后误删别人持有的锁。
+     *
+     * @return true 表示确实由当前 token 释放
+     */
+    public boolean unlock(String key, String token) {
+        if (token == null) {
+            return false;
+        }
+        Long result = redisTemplate.execute(
+                UNLOCK_SCRIPT,
+                Collections.singletonList(key),
+                token);
+        return result != null && result > 0;
     }
 }
