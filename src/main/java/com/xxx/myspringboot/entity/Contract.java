@@ -10,9 +10,15 @@ import com.xxx.myspringboot.dto.CommonAttach;
 import com.xxx.myspringboot.entity.base.BaseEntityStandard;
 import com.xxx.myspringboot.entity.enums.ContractFlagEnum;
 import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.fesod.sheet.annotation.ExcelIgnore;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
+import org.apache.fesod.sheet.annotation.format.DateTimeFormat;
+import org.apache.fesod.sheet.annotation.format.NumberFormat;
+import org.apache.fesod.sheet.annotation.write.style.ColumnWidth;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +31,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@ColumnWidth(12)
 @TableName(autoResultMap = true)
 public class Contract extends BaseEntityStandard {
 
@@ -33,19 +40,31 @@ public class Contract extends BaseEntityStandard {
     /**
      * 合同编号
      */
+    @ExcelProperty("合同编号")
+    @ColumnWidth(15)
     @TableField(updateStrategy = FieldStrategy.NEVER)
     private String code;
 
     /**
      * 名称
      */
+    @ExcelProperty("合同名称")
+    @ColumnWidth(20)
     private String name;
 
     /**
      * 合同类型
      */
+    @ExcelIgnore
     @TableField("c_type")
     private ContractTypeEnum cType = ContractTypeEnum.Buy;
+
+    /**
+     * 合同类型（用于导出）
+     */
+    @ExcelProperty("合同类型")
+    @TableField(exist = false)
+    private String cTypeText;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public String getCTypeText() {
@@ -55,42 +74,60 @@ public class Contract extends BaseEntityStandard {
     /**
      * 签订时间
      */
+    @ExcelProperty("签订时间")
+    @DateTimeFormat("yyyy-MM-dd")
     private LocalDateTime signDate;
 
     /**
      * 金额
      */
+    @ExcelProperty("金额")
+    @NumberFormat("#.##")
     private BigDecimal value;
 
     /**
      * 省份
      */
+    @ExcelProperty("省份")
     private String regionProvince;
 
     /**
      * 市
      */
+    @ExcelProperty("城市")
     private String regionCity;
 
     /**
      * 区
      */
+    @ExcelProperty("地区")
     private String regionDistrict;
 
     /**
      * 省市区聚合
      */
+    @ExcelIgnore
     private String regionFull;
 
     /**
      * 详细地址
      */
+    @ExcelProperty("地址")
+    @ColumnWidth(20)
     private String regionAddress;
 
     /**
      * 审批状态
      */
+    @ExcelIgnore
     private ContractFlagEnum flag = ContractFlagEnum.Draft;
+
+    /**
+     * 审批状态（用于导出）
+     */
+    @TableField(exist = false)
+    @ExcelProperty("审批状态")
+    private String flagText;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public String getFlagText() {
@@ -100,12 +137,14 @@ public class Contract extends BaseEntityStandard {
     /**
      * 附件列表
      */
+    @ExcelIgnore
     @TableField(typeHandler = JacksonTypeHandler.class)
     public List<CommonAttach> attachList = new ArrayList<>();
 
     /**
      * 明细列表
      */
+    @ExcelIgnore
     @TableField(exist = false)
     private List<ContractItem> ItemList = new ArrayList<>();
 

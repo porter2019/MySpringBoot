@@ -1,10 +1,12 @@
 package com.xxx.myspringboot.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
+import com.xxx.myspringboot.dto.input.ContractExportInput;
 import com.xxx.myspringboot.dto.input.ContractPageInput;
 import com.xxx.myspringboot.entity.Contract;
 import com.xxx.myspringboot.entity.ContractItem;
@@ -12,8 +14,7 @@ import com.xxx.myspringboot.entity.enums.ContractFlagEnum;
 import com.xxx.myspringboot.entity.enums.ContractTypeEnum;
 import com.xxx.myspringboot.service.IContractItemService;
 import com.xxx.myspringboot.service.IContractService;
-import com.xxx.myspringboot.service.common.ICommonFuncService;
-import com.xxx.myspringboot.service.common.IPDFService;
+import com.xxx.myspringboot.service.common.IExportService;
 import com.xxx.myspringboot.service.sys.ISysDirectoryCategoryService;
 import com.xxx.myspringboot.util.EnumOptionUtil;
 import com.xxx.myspringboot.util.MyStringUtil;
@@ -28,11 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.ObjectMapper;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -56,14 +54,17 @@ public class ContractController {
     private ISysDirectoryCategoryService sysDirectoryCategoryService;
 
     @Resource
-    private IPDFService pdfService;
+    private IExportService exportService;
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     @PostMapping("/get/pagelist")
     @Operation(summary = "获取分页列表")
     @PermissionAction(name = "查看", alias = "show")
     public ApiResult GetPageList(@RequestBody @NotNull ContractPageInput req) {
         var data = contractService.getPageList(req);
-        pdfService.excelToPdf("/uploads/export/111.xlsx","/uploads/export/111.pdf");
+//        pdfService.excelToPdf("/uploads/export/111.xlsx", "/uploads/export/111.pdf");
         return ApiResult.success(data).withEnums(buildEnums());
     }
 
@@ -162,4 +163,37 @@ public class ContractController {
         return ApiResult.success(newStatusText);
     }
 
+    @PostMapping("/export")
+    @Operation(summary = "导出")
+    public ApiResult Export(@RequestBody @NotNull ContractPageInput req, @RequestParam @NotBlank String format) {
+        req.getPageInfo().setPageIndex(1);
+        req.getPageInfo().setPageSize(1000);
+        var data = contractService.getPageList(req);
+        if (ObjectUtil.isNull(data)) {
+            if (data.getItems().isEmpty()) {
+                return ApiResult.failed("数据为空，无法导出");
+            }
+        }
+
+        var webPath = exportService.export("contract-" + System.currentTimeMillis(), format, Contract.class, data.getItems());
+        return ApiResult.success(webPath);
+    }
+
+    @PostMapping("/export/config")
+    @Operation(summary = "导出配置")
+    public ApiResult ExportConfig(@RequestBody @NotNull ContractExportInput req) {
+        var query = objectMapper.convertValue(req.getQueryObject(), ContractPageInput.class);
+        query.getPageInfo().setPageIndex(1);
+        query.getPageInfo().setPageSize(1000);
+
+        var data = contractService.getPageList(query);
+        if (ObjectUtil.isNull(data)) {
+            if (data.getItems().isEmpty()) {
+                return ApiResult.failed("数据为空，无法导出");
+            }
+        }
+
+        var webPath = exportService.export("contract-" + System.currentTimeMillis(), req.getFormat(), Contract.class, data.getItems());
+        return ApiResult.success(webPath);
+    }
 }

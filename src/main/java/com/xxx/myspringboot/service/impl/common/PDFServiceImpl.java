@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -55,44 +58,93 @@ public class PDFServiceImpl implements IPDFService {
      */
     @Override
     public Boolean excelToPdf(String excelPath, String pdfPath) {
-        // 统一转成绝对路径，兼容 ./ 和 /app/wwwroot 两种写法
-        Path webRoot = Paths.get(webRootPath).toAbsolutePath().normalize();
+        try {
+            // 统一转成绝对路径（入参约定：磁盘物理路径或 web 相对路径，二选一，下面统一处理成磁盘路径）
+            Path webRoot = Paths.get(webRootPath).toAbsolutePath().normalize();
 
-        //如果excelPath的前缀是staticUrlPrefix一致，则去掉，这个staticUrlPrefix是web访问使用的
-        if (excelPath.startsWith(staticUrlPrefix)) {
-            excelPath = excelPath.substring(staticUrlPrefix.length());
-        }
-        //如果pdfPath的前缀是staticUrlPrefix一致，则去掉，这个staticUrlPrefix是web访问使用的
-        if (pdfPath.startsWith(staticUrlPrefix)) {
-            pdfPath = pdfPath.substring(staticUrlPrefix.length());
-        }
+            Path excelFile = toDiskPath(webRoot, excelPath);
+            Path pdfFile   = toDiskPath(webRoot, pdfPath);
 
-        //excel文件IO路径
-        String excelIOPath = webRoot + excelPath;
-        //pdf文件IO路径
-        String pdfIOPath = webRoot + pdfPath;
-
-        if (FileUtil.exist(excelIOPath)) {
-            log.error("【pdf服务】excel文件不存在，路径：{}", excelIOPath);
-            return false;
-        }
-        if (FileUtil.exist(pdfIOPath)) {
-            //存在则删除
-            FileUtil.del(pdfIOPath);
-        }
-
-        HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("files", FileUtil.file(excelIOPath));
-
-        var url = pdfServiceHost + "/forms/libreoffice/convert";
-        try (HttpResponse response = HttpUtil.createPost(url).form(paramMap).execute()) {
-            if (!response.isOk()) {
-                log.error("【pdf服务】excel转换失败，状态码：{}", response.getStatus());
+            if (excelFile == null || pdfFile == null) {
+                log.error("【pdf服务】路径解析失败, excel={}, pdf={}", excelPath, pdfPath);
                 return false;
             }
-            File downloadFile = FileUtil.file(pdfIOPath);
-            response.writeBodyForFile(downloadFile, null);
-            return true;
+
+            // 1. excel 必须存在
+            if (!Files.exists(excelFile)) {
+                log.error("【pdf服务】excel文件不存在，路径：{}", excelFile);
+                return false;
+            }
+
+            // 2. 确保 pdf 父目录存在
+            Path pdfParent = pdfFile.getParent();
+            if (pdfParent != null && !Files.exists(pdfParent)) {
+                Files.createDirectories(pdfParent);
+            }
+
+            // 3. 已存在的 pdf 先删掉（失败记日志，不阻断）
+            if (Files.exists(pdfFile)) {
+                try {
+                    Files.delete(pdfFile);
+                } catch (IOException e) {
+                    log.warn("【pdf服务】删除已存在pdf失败，路径：{}", pdfFile, e);
+                    return false;
+                }
+            }
+
+            Map<String, Object> paramMap = new HashMap<>();
+            paramMap.put("files", excelFile.toFile());
+
+            //docker run --name gotenberg -p 5924:3000 --restart=always --network 1panel-network -d gotenberg/gotenberg:8
+            String url = pdfServiceHost + "/forms/libreoffice/convert";
+            try (HttpResponse response = HttpUtil.createPost(url).form(paramMap).execute()) {
+                if (!response.isOk()) {
+                    log.error("【pdf服务】excel转换失败，状态码：{}", response.getStatus());
+                    return false;
+                }
+                response.writeBodyForFile(pdfFile.toFile(), null);
+                return Files.exists(pdfFile);
+            }
+        } catch (IOException e) {
+            log.error("【pdf服务】excel转pdf异常, excel={}, pdf={}", excelPath, pdfPath, e);
+            return false;
         }
+    }
+
+    /**
+     * 把入参统一解析成磁盘绝对路径：
+     * - 已是绝对路径且位于 webRoot 下 → 直接用
+     * - 以 staticUrlPrefix 开头的 web 路径 → 去掉前缀后 resolve 到 webRoot
+     * - 其他相对路径 → resolve 到 webRoot
+     */
+    private Path toDiskPath(Path webRoot, String rawPath) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return null;
+        }
+        String p = rawPath.trim().replace('\\', '/');
+
+        // 已存在且是绝对路径：直接用
+        Path direct = Paths.get(p);
+        if (direct.isAbsolute()) {
+            direct = direct.normalize();
+            // 安全：若在 webRoot 下，直接用；否则原样返回（也可选择拒绝）
+            return direct;
+        }
+
+        // 去掉 web 访问前缀（要求边界匹配，避免误伤）
+        if (staticUrlPrefix != null && !staticUrlPrefix.isBlank()) {
+            String prefix = staticUrlPrefix.endsWith("/")
+                    ? staticUrlPrefix.substring(0, staticUrlPrefix.length() - 1)
+                    : staticUrlPrefix;
+            if (p.equals(prefix) || p.startsWith(prefix + "/")) {
+                p = p.substring(prefix.length());
+            }
+        }
+
+        // 去掉开头的 "/"，否则 resolve 会把它当绝对路径、丢掉 webRoot
+        if (p.startsWith("/")) {
+            p = p.substring(1);
+        }
+        return webRoot.resolve(p).normalize();
     }
 }

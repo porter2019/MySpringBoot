@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.fesod.sheet.annotation.write.style.ColumnWidth;
 
 import java.util.Arrays;
 
@@ -16,6 +17,7 @@ import java.util.Arrays;
 @Setter
 @Getter
 @ToString
+@ColumnWidth(12)
 @TableName("sys_user_om_view")
 public class SysUserOMView extends SysUser {
 

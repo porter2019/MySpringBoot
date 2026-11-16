@@ -57,9 +57,6 @@ public class AttachUploadServiceImpl implements IAttachUploadService {
         // 统一转成绝对路径，兼容 ./ 和 /app/wwwroot 两种写法
         Path webRoot = Paths.get(webRootPath).toAbsolutePath().normalize();
 
-        // 对应 var baseIODirectory = App.WebHostEnvironment.WebRootPath;
-        String baseIODirectory = webRootPath;
-
         // 拼出 uploads/xxx/yyy 的相对路径段
         Path saveFolderPath = Paths.get(BASE_ROOT_FOLDER);
         for (String part : folder.split("/")) {

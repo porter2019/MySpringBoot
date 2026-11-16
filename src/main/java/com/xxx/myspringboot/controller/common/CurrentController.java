@@ -66,7 +66,7 @@ public class CurrentController {
 
         var avatarUrl = userInfo.getAvatar();
         if (StringUtils.isNotBlank(avatarUrl)) {
-            avatarUrl = env.getProperty("app.domain-url") + avatarUrl;
+            avatarUrl = env.getProperty("app.domain-url") + env.getProperty("app.static-url-prefix") + avatarUrl;
         }
         Map<String, Object> result = new HashMap<>();
         result.put("UserId", userInfo.getId());

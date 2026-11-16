@@ -6,6 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.fesod.sheet.annotation.ExcelIgnore;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
+import org.apache.fesod.sheet.annotation.format.DateTimeFormat;
+import org.apache.fesod.sheet.annotation.write.style.ColumnWidth;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -22,12 +26,16 @@ public class BaseEntity implements Serializable {
     /**
      * 主键ID
      */
+    @ExcelProperty("编号")
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
      * 创建时间
      */
+    @ExcelProperty("创建时间")
+    @DateTimeFormat("yyyy-MM-dd HH:mm:ss")
+    @ColumnWidth(18)
     @TableField(value = "created_time", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
@@ -35,6 +43,7 @@ public class BaseEntity implements Serializable {
     /**
      * 更新时间
      */
+    @ExcelIgnore
     @TableField(value = "updated_time", fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
@@ -42,6 +51,7 @@ public class BaseEntity implements Serializable {
     /**
      * 是否软删除
      */
+    @ExcelIgnore
     @TableLogic(value = "0", delval = "1")
     @TableField("is_deleted")
     @JsonIgnore

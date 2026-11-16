@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.fesod.sheet.annotation.ExcelIgnore;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 
 /**
  * 标准实体需要继承的，包括创建人、修改人等信息
@@ -21,31 +23,44 @@ public class BaseEntityStandard extends BaseEntity {
     /**
      * 创建者用户Id
      */
+    @ExcelIgnore
     @TableField(value = "created_user_id", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     private Long createdUserId;
 
     /**
      * 创建者用户名
      */
+    @ExcelProperty("创建者")
     @TableField(value = "created_user_name", fill = FieldFill.INSERT, updateStrategy = FieldStrategy.NEVER)
     private String createdUserName;
 
     /**
      * 修改者用户Id
      */
+    @ExcelIgnore
     @TableField(value = "updated_user_id", fill = FieldFill.INSERT_UPDATE)
     private Long updatedUserId;
 
     /**
      * 修改者用户名
      */
+    @ExcelProperty("修改者")
     @TableField(value = "updated_user_name", fill = FieldFill.INSERT_UPDATE)
     private String updatedUserName;
 
     /**
      * 状态
      */
+    @ExcelIgnore
     private Boolean status = true;
+
+    /**
+     * 状态（用于导出）
+     */
+    @ExcelProperty("状态")
+    @TableField(exist = false)
+    private String statusText;
+
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public String getStatusText() {
@@ -55,6 +70,7 @@ public class BaseEntityStandard extends BaseEntity {
     /**
      * 备注
      */
+    @ExcelProperty("备注")
     private String remark;
 
     /* 建表模板
