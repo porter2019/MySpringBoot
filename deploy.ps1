@@ -31,6 +31,7 @@ docker run --name my-spring-boot -d -p ${PORT}:8080 `
   -e SPRING_BANNER_LOCATION=file:/app/config/banner.txt `
   -e LOG_HOME=/app/logs `
   -e LOGBACK_CONFIG=file:/app/config/logback-spring.xml `
+  --network my-bridge `
   my-spring-boot:latest
 
 #Read-Host "按 Enter 键退出"

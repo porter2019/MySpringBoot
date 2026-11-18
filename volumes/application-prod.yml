@@ -7,7 +7,7 @@ logging:
 app:
   domain-url: http://192.168.2.6:8060 # 接口访问域名
   web-root-path: /app/wwwroot # 容器内固定绝对路径，由 docker -v 挂载
-  static-url-prefix: "" # 静态文件访问前缀，Nginx 直接提供，无前缀
+  static-url-prefix: "/api" # 静态文件访问前缀，Nginx 直接提供，无前缀
 spring:
   application:
     name: MySpringBoot # 项目文件名
@@ -19,15 +19,15 @@ spring:
       accept-case-insensitive-properties: true # 传入的参数大小写不敏感
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.2.6:3306/spring_boot_demo?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
+    url: jdbc:mysql://mysql8:3306/my_spring_boot2?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&remarks=true&useInformationSchema=true
     username: root
     password: Mysql@8
   data:
     redis:
-      host: 192.168.2.6
+      host: redis
       port: 6379
       password: admin123
-      database: 0
+      database: 1
       timeout: 3000ms
       lettuce:
         pool:
@@ -64,7 +64,8 @@ knife4j:
     enable: true #启用接口文档
   setting:
     language: zh_cn
-
+pdfService:
+  host: http://gotenberg:3000
 mybatis-plus:
   mapper-locations: classpath*:/**/mapper/xml/*.xml
   configuration:

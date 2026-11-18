@@ -20,6 +20,7 @@ CREATE TABLE `contract` (
   `region_full` varchar(200) DEFAULT NULL COMMENT '省市区',
   `region_address` varchar(200) DEFAULT NULL COMMENT '详细地址',
   `flag` int NOT NULL DEFAULT '0' COMMENT '审批状态',
+  `attach_list` json DEFAULT NULL COMMENT '附件列表',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `remark` varchar(200) DEFAULT NULL COMMENT '备注',
   `created_user_id` bigint DEFAULT NULL COMMENT '创建者用户Id',
@@ -58,7 +59,7 @@ CREATE TABLE `log_action` (
   `operator` varchar(30) DEFAULT NULL COMMENT '操作人',
   `class_name` varchar(200) DEFAULT NULL COMMENT '实体包名',
   `local` varchar(200) DEFAULT NULL COMMENT '位置',
-  `content` mediumint DEFAULT NULL COMMENT '操作内容',
+  `content` mediumtext COMMENT '操作内容',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志';
@@ -76,7 +77,7 @@ CREATE TABLE `log_login` (
   `user_agent` varchar(500) DEFAULT NULL COMMENT 'UA',
   `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登陆日志';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登陆日志';
 
 DROP TABLE IF EXISTS `sys_directory_category`;
 
@@ -110,6 +111,7 @@ CREATE TABLE `sys_directory_item` (
   `category_id` bigint NOT NULL COMMENT '分类Id',
   `name` varchar(30) DEFAULT NULL COMMENT '名称',
   `value` varchar(30) DEFAULT NULL COMMENT '值',
+  `sort` int NOT NULL DEFAULT '0' COMMENT '排序数字',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `remark` varchar(200) DEFAULT NULL COMMENT '备注',
   `created_user_id` bigint DEFAULT NULL COMMENT '创建者用户Id',
@@ -291,7 +293,7 @@ CREATE TABLE `sys_user` (
   `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '软删除',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统用户';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统用户';
 
 DROP TABLE IF EXISTS `tree`;
 
@@ -319,10 +321,52 @@ CREATE TABLE `tree` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='树形数据';
 
 DROP VIEW IF EXISTS `sys_directory_item_full_view`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `sys_directory_item_full_view` AS select `a`.`id` AS `id`,`a`.`category_id` AS `category_id`,`a`.`name` AS `name`,`a`.`value` AS `value`,`a`.`status` AS `status`,`a`.`remark` AS `remark`,`a`.`created_user_id` AS `created_user_id`,`a`.`created_user_name` AS `created_user_name`,`a`.`created_time` AS `created_time`,`a`.`updated_user_id` AS `updated_user_id`,`a`.`updated_user_name` AS `updated_user_name`,`a`.`updated_time` AS `updated_time`,`a`.`is_deleted` AS `is_deleted`,`sdc`.`name` AS `category_name`,`sdc`.`code` AS `category_code` from (`sys_directory_item` `a` left join `sys_directory_category` `sdc` on(((`a`.`category_id` = `sdc`.`id`) and (`sdc`.`is_deleted` = 0)))) where (`a`.`is_deleted` = 0) group by `a`.`id`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `sys_directory_item_full_view` AS select `a`.`id` AS `id`,`a`.`category_id` AS `category_id`,`a`.`name` AS `name`,`a`.`value` AS `value`,`a`.`sort` AS `sort`,`a`.`status` AS `status`,`a`.`remark` AS `remark`,`a`.`created_user_id` AS `created_user_id`,`a`.`created_user_name` AS `created_user_name`,`a`.`created_time` AS `created_time`,`a`.`updated_user_id` AS `updated_user_id`,`a`.`updated_user_name` AS `updated_user_name`,`a`.`updated_time` AS `updated_time`,`a`.`is_deleted` AS `is_deleted`,`sdc`.`name` AS `category_name`,`sdc`.`code` AS `category_code` from (`sys_directory_item` `a` left join `sys_directory_category` `sdc` on(((`a`.`category_id` = `sdc`.`id`) and (`sdc`.`is_deleted` = 0)))) where (`a`.`is_deleted` = 0) group by `a`.`id`;
 
 DROP VIEW IF EXISTS `sys_user_om_view`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `sys_user_om_view` AS select `a`.`id` AS `id`,`a`.`cell_phone` AS `cell_phone`,`a`.`login_name` AS `login_name`,`a`.`user_name` AS `user_name`,`a`.`email` AS `email`,`a`.`password` AS `password`,`a`.`org_id` AS `org_id`,`a`.`org_name` AS `org_name`,`a`.`is_om` AS `is_om`,`a`.`is_mp` AS `is_mp`,`a`.`is_super` AS `is_super`,`a`.`avatar` AS `avatar`,`a`.`wx_mp_open_id` AS `wx_mp_open_id`,`a`.`last_login_time` AS `last_login_time`,`a`.`last_login_ip` AS `last_login_ip`,`a`.`status` AS `status`,`a`.`remark` AS `remark`,`a`.`created_user_id` AS `created_user_id`,`a`.`created_user_name` AS `created_user_name`,`a`.`created_time` AS `created_time`,`a`.`updated_user_id` AS `updated_user_id`,`a`.`updated_user_name` AS `updated_user_name`,`a`.`updated_time` AS `updated_time`,`a`.`is_deleted` AS `is_deleted`,ifnull(group_concat(`ru`.`role_id` separator ','),'') AS `role_ids`,ifnull(group_concat(`sr`.`name` separator ','),'') AS `role_names`,ifnull(group_concat(`spu`.`post_id` separator ','),'') AS `post_ids`,ifnull(group_concat(`sp`.`name` separator ','),'') AS `post_names` from ((((`sys_user` `a` left join `sys_role_user` `ru` on(((`a`.`id` = `ru`.`user_id`) and (`ru`.`is_deleted` = 0)))) left join `sys_role` `sr` on(((`sr`.`id` = `ru`.`role_id`) and (`sr`.`is_deleted` = 0)))) left join `sys_post_user` `spu` on(((`a`.`id` = `spu`.`user_id`) and (`spu`.`is_deleted` = 0)))) left join `sys_post` `sp` on(((`sp`.`id` = `spu`.`post_id`) and (`sp`.`is_deleted` = 0)))) where (`a`.`is_deleted` = 0) group by `a`.`id`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `sys_user_om_view` AS select `a`.`id` AS `id`,`a`.`cell_phone` AS `cell_phone`,`a`.`login_name` AS `login_name`,`a`.`user_name` AS `user_name`,`a`.`gender` AS `gender`,`a`.`email` AS `email`,`a`.`password` AS `password`,`a`.`org_id` AS `org_id`,`a`.`org_name` AS `org_name`,`a`.`is_om` AS `is_om`,`a`.`is_mp` AS `is_mp`,`a`.`is_super` AS `is_super`,`a`.`avatar` AS `avatar`,`a`.`wx_mp_open_id` AS `wx_mp_open_id`,`a`.`last_login_time` AS `last_login_time`,`a`.`last_login_ip` AS `last_login_ip`,`a`.`status` AS `status`,`a`.`remark` AS `remark`,`a`.`created_user_id` AS `created_user_id`,`a`.`created_user_name` AS `created_user_name`,`a`.`created_time` AS `created_time`,`a`.`updated_user_id` AS `updated_user_id`,`a`.`updated_user_name` AS `updated_user_name`,`a`.`updated_time` AS `updated_time`,`a`.`is_deleted` AS `is_deleted`,ifnull(`r`.`role_ids`,'') AS `role_ids`,ifnull(`r`.`role_names`,'') AS `role_names`,ifnull(`p`.`post_ids`,'') AS `post_ids`,ifnull(`p`.`post_names`,'') AS `post_names` from ((`sys_user` `a` left join (select `ru`.`user_id` AS `user_id`,group_concat(`ru`.`role_id` separator ',') AS `role_ids`,group_concat(`sr`.`name` separator ',') AS `role_names` from (`sys_role_user` `ru` left join `sys_role` `sr` on(((`sr`.`id` = `ru`.`role_id`) and (`sr`.`is_deleted` = 0)))) where (`ru`.`is_deleted` = 0) group by `ru`.`user_id`) `r` on((`r`.`user_id` = `a`.`id`))) left join (select `spu`.`user_id` AS `user_id`,group_concat(`spu`.`post_id` separator ',') AS `post_ids`,group_concat(`sp`.`name` separator ',') AS `post_names` from (`sys_post_user` `spu` left join `sys_post` `sp` on(((`sp`.`id` = `spu`.`post_id`) and (`sp`.`is_deleted` = 0)))) where (`spu`.`is_deleted` = 0) group by `spu`.`user_id`) `p` on((`p`.`user_id` = `a`.`id`))) where (`a`.`is_deleted` = 0);
+
+DROP PROCEDURE IF EXISTS `sp_update_sys_directory_category_layer`;
+DELIMITER //
+CREATE PROCEDURE `sp_update_sys_directory_category_layer`()
+BEGIN
+    -- 使用递归CTE来构建层级结构
+    WITH RECURSIVE p AS (
+        SELECT
+            a.id,
+            a.name,
+            a.order_no,
+            CAST('' AS CHAR(255)) AS parent_name,  -- 显式定义初始长度
+            CAST(CONCAT('|', a.id, '|') AS CHAR(1000)) AS full_id,
+            a.name AS full_name,
+            1 AS level_no,
+            a.order_no AS full_order_no
+        FROM sys_directory_category a
+        WHERE a.parent_id = 0 and a.is_deleted = 0
+        UNION ALL
+        SELECT
+            a.id,
+            a.`name`,
+            a.order_no,
+            CAST(p.`name` AS CHAR(255)) AS parent_name,
+            CAST(LEFT(CONCAT(p.full_id, a.id, '|'), 1000) AS CHAR(1000)) AS full_id,
+            CAST(LEFT(CONCAT(p.full_name, '|', a.name), 1000) AS CHAR(1000)) AS full_name,
+            (p.level_no + 1) AS level_no,
+            LEFT(CONCAT(p.full_order_no, '|', a.order_no),2000) AS full_order_no
+        FROM sys_directory_category a
+                 INNER JOIN p ON a.parent_id = p.id where a.is_deleted = 0
+    )
+    -- 更新Tree表中的层级信息
+    UPDATE sys_directory_category q
+        INNER JOIN p ON q.id = p.id
+    SET
+        q.parent_name = p.parent_name,
+        q.full_id = LEFT(p.full_id, 1000),       -- 在赋值时再次截断，保险
+        q.full_name = LEFT(p.full_name, 1000),
+        q.level_no = p.level_no,
+        q.full_order_no = LEFT(p.full_order_no, 1000);
+END//
+DELIMITER ;
 
 DROP PROCEDURE IF EXISTS `sp_update_sys_org_layer`;
 DELIMITER //
