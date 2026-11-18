@@ -1,9 +1,9 @@
 package com.xxx.myspringboot.service.impl.sys;
 
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.entity.sys.SysModule;
 import com.xxx.myspringboot.mapper.sys.SysModuleMapper;
 import com.xxx.myspringboot.service.sys.ISysModuleService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**

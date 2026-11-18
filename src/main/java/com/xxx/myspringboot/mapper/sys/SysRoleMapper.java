@@ -1,6 +1,5 @@
 package com.xxx.myspringboot.mapper.sys;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xxx.myspringboot.entity.sys.SysRole;
 import com.xxx.myspringboot.mapper.common.MyPageQueryMapper;
 import org.apache.ibatis.annotations.Param;

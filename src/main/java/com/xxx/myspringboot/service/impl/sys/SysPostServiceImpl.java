@@ -1,16 +1,14 @@
 package com.xxx.myspringboot.service.impl.sys;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.common.PageResult;
 import com.xxx.myspringboot.dto.input.SysPost.SysPostPageInput;
 import com.xxx.myspringboot.entity.sys.SysPost;
 import com.xxx.myspringboot.entity.sys.SysPostUser;
-import com.xxx.myspringboot.entity.sys.SysRolePermit;
-import com.xxx.myspringboot.entity.sys.SysRoleUser;
 import com.xxx.myspringboot.mapper.sys.SysPostMapper;
 import com.xxx.myspringboot.mapper.sys.SysPostUserMapper;
 import com.xxx.myspringboot.service.sys.ISysPostService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

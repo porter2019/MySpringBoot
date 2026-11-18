@@ -1,9 +1,9 @@
 package com.xxx.myspringboot.mapper.sys;
 
-import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xxx.myspringboot.dto.output.permit.SysRolePermitOutput;
 import com.xxx.myspringboot.entity.sys.SysPermit;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

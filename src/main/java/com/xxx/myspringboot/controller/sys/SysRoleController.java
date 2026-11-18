@@ -2,7 +2,6 @@ package com.xxx.myspringboot.controller.sys;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
@@ -12,8 +11,6 @@ import com.xxx.myspringboot.dto.AuditContext;
 import com.xxx.myspringboot.dto.AuditInfo;
 import com.xxx.myspringboot.dto.input.SysRole.SysRolePageInput;
 import com.xxx.myspringboot.dto.input.SysRole.SysRoleUpdatePermitInput;
-import com.xxx.myspringboot.entity.Contract;
-import com.xxx.myspringboot.entity.sys.SysPost;
 import com.xxx.myspringboot.entity.sys.SysRole;
 import com.xxx.myspringboot.service.common.ICommonFuncService;
 import com.xxx.myspringboot.service.sys.ISysPermitService;

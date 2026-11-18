@@ -1,12 +1,11 @@
 package com.xxx.myspringboot.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.entity.Tree;
 import com.xxx.myspringboot.mapper.TreeMapper;
 import com.xxx.myspringboot.service.ITreeService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.util.TreeUtil;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;

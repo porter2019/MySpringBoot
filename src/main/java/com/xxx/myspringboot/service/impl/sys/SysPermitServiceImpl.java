@@ -1,9 +1,9 @@
 package com.xxx.myspringboot.service.impl.sys;
 
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.entity.sys.SysPermit;
 import com.xxx.myspringboot.mapper.sys.SysPermitMapper;
 import com.xxx.myspringboot.service.sys.ISysPermitService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

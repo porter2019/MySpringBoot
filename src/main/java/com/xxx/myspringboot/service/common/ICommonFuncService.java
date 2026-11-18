@@ -1,7 +1,6 @@
 package com.xxx.myspringboot.service.common;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.xxx.myspringboot.dto.output.AutoCompleteOutput;
 

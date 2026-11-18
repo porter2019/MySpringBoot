@@ -1,7 +1,7 @@
 package com.xxx.myspringboot.service.sys;
 
-import com.xxx.myspringboot.entity.sys.SysPostUser;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.xxx.myspringboot.entity.sys.SysPostUser;
 
 /**
  * 岗位下的用户 服务类

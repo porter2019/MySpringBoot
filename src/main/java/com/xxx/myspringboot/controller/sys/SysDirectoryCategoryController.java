@@ -1,19 +1,16 @@
 package com.xxx.myspringboot.controller.sys;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xxx.myspringboot.annotation.PermissionAction;
 import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.dto.input.SysDirectory.SysDirectoryCategoryModifyInput;
 import com.xxx.myspringboot.entity.sys.SysDirectoryCategory;
-import com.xxx.myspringboot.entity.sys.SysUser;
 import com.xxx.myspringboot.service.sys.ISysDirectoryCategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;

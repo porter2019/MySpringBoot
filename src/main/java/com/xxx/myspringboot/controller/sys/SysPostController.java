@@ -7,9 +7,7 @@ import com.xxx.myspringboot.annotation.PermissionHandler;
 import com.xxx.myspringboot.common.ApiResult;
 import com.xxx.myspringboot.common.CurrentConst;
 import com.xxx.myspringboot.dto.input.SysPost.SysPostPageInput;
-import com.xxx.myspringboot.dto.output.AutoCompleteOutput;
 import com.xxx.myspringboot.entity.sys.SysPost;
-import com.xxx.myspringboot.entity.sys.SysRole;
 import com.xxx.myspringboot.service.common.ICommonFuncService;
 import com.xxx.myspringboot.service.sys.ISysPostService;
 import com.xxx.myspringboot.util.MyStringUtil;
@@ -17,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +22,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * 岗位

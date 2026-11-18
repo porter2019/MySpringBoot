@@ -3,7 +3,6 @@ package com.xxx.myspringboot.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.xxx.myspringboot.entity.base.BaseEntityStandard;
 import com.xxx.myspringboot.entity.base.BaseEntityTree;
 import lombok.Getter;
 import lombok.Setter;

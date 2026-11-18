@@ -1,9 +1,9 @@
 package com.xxx.myspringboot.service.impl.sys;
 
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.entity.sys.SysRolePermit;
 import com.xxx.myspringboot.mapper.sys.SysRolePermitMapper;
 import com.xxx.myspringboot.service.sys.ISysRolePermitService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**

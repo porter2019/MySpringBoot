@@ -1,9 +1,9 @@
 package com.xxx.myspringboot.service.impl;
 
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.entity.ContractItem;
 import com.xxx.myspringboot.mapper.ContractItemMapper;
 import com.xxx.myspringboot.service.IContractItemService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**

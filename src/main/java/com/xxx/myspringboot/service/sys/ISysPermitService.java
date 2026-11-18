@@ -1,7 +1,7 @@
 package com.xxx.myspringboot.service.sys;
 
-import com.xxx.myspringboot.entity.sys.SysPermit;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.xxx.myspringboot.entity.sys.SysPermit;
 
 import java.util.List;
 

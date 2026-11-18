@@ -1,9 +1,9 @@
 package com.xxx.myspringboot.service.sys;
 
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.xxx.myspringboot.common.PageResult;
 import com.xxx.myspringboot.dto.input.SysPost.SysPostPageInput;
 import com.xxx.myspringboot.entity.sys.SysPost;
-import com.baomidou.mybatisplus.spring.service.IService;
 
 import java.util.Set;
 

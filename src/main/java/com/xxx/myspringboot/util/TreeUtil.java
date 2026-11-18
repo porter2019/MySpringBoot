@@ -9,8 +9,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.util.*;
-
 /**
  * 树形结构工具类，用于构建树形数据结构
  */

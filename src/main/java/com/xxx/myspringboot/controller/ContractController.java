@@ -64,7 +64,6 @@ public class ContractController {
     @PermissionAction(name = "查看", alias = "show")
     public ApiResult GetPageList(@RequestBody @NotNull ContractPageInput req) {
         var data = contractService.getPageList(req);
-//        pdfService.excelToPdf("/uploads/export/111.xlsx", "/uploads/export/111.pdf");
         return ApiResult.success(data).withEnums(buildEnums());
     }
 

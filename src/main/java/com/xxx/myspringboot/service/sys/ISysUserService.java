@@ -1,9 +1,8 @@
 package com.xxx.myspringboot.service.sys;
 
-import com.xxx.myspringboot.entity.sys.SysUser;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.xxx.myspringboot.entity.sys.SysUser;
 import com.xxx.myspringboot.entity.sys.SysUserOMView;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 

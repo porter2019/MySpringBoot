@@ -2,14 +2,12 @@ package com.xxx.myspringboot.service.impl.sys;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.injector.methods.SelectList;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.xxx.myspringboot.entity.sys.SysOrg;
 import com.xxx.myspringboot.entity.sys.SysUser;
 import com.xxx.myspringboot.mapper.sys.SysOrgMapper;
 import com.xxx.myspringboot.mapper.sys.SysUserMapper;
 import com.xxx.myspringboot.service.sys.ISysOrgService;
-import com.xxx.myspringboot.service.sys.ISysUserService;
 import com.xxx.myspringboot.util.TreeUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
