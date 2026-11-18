@@ -25,6 +25,7 @@ docker run --name $APP_NAME -d -p 8060:8080 \
   -e SPRING_BANNER_LOCATION=file:/app/config/banner.txt \
   -e LOG_HOME=/app/logs \
   -e LOGBACK_CONFIG=file:/app/config/logback-spring.xml \
+  --network my-bridge \
   $IMAGE
 
 echo "==> 完成，查看日志：docker logs -f $APP_NAME"
